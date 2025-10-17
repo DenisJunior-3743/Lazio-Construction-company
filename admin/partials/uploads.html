@@ -1,0 +1,78 @@
+<h5>Uploads</h5>
+<form id="uploadForm" class="row g-2 align-items-end mb-3" enctype="multipart/form-data">
+  <div class="col-12 col-md-3">
+    <label class="form-label">Category</label>
+    <select name="category" class="form-select">
+      <option>Construction</option>
+      <option>Plan Drawing</option>
+      <option>Training</option>
+    </select>
+  </div>
+  <div class="col-12 col-md-5">
+    <label class="form-label">Description</label>
+    <input name="description" class="form-control" placeholder="Brief description">
+  </div>
+  <div class="col-12 col-md-2">
+    <label class="form-label">File</label>
+    <input name="file" type="file" class="form-control" accept="image/*,video/*">
+  </div>
+  <div class="col-12 col-md-2">
+    <button class="btn btn-primary w-100">Upload</button>
+  </div>
+</form>
+<div id="uploadsList" class="row g-3"></div>
+<script>
+async function loadUploads(){
+  const r = await fetch('/lazio_site/admin/api/uploads.php?action=list', {credentials:'include'});
+  const data = await r.json();
+  const grid = document.getElementById('uploadsList');
+  grid.innerHTML = data.items.map(item => `
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card h-100">
+        ${item.type === 'image' ? `<img src="${item.path}" class="card-img-top">`
+          : `<video class="w-100" controls src="${item.path}"></video>`}
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>${item.category}</strong>
+            <span class="small small-muted">${new Date(item.created_at).toLocaleDateString()}</span>
+          </div>
+          <p class="small" id="desc-${item.id}">${item.description||''}</p>
+          <input type="checkbox" ${item.show_home ? 'checked' : ''} onchange="toggleHome(${item.id}, this.checked)"> Show on Home
+          <button class="btn btn-sm btn-outline-secondary" onclick="editDesc(${item.id})">Edit Description</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="delUpload(${item.id})">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('') || '<p class="text-muted small">No uploads yet.</p>';
+}
+
+async function toggleHome(id, show){
+  await fetch('/lazio_site/admin/api/uploads.php?action=toggle_home', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id, show}), credentials:'include'
+  });
+  loadUploads();
+}
+
+async function editDesc(id){
+  const desc = prompt('Edit description:', document.getElementById('desc-'+id).textContent);
+  if (desc !== null) {
+    await fetch('/lazio_site/admin/api/uploads.php?action=edit_desc', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id, desc}), credentials:'include'
+    });
+    loadUploads();
+  }
+}
+
+async function delUpload(id){
+  await fetch('/lazio_site/admin/api/uploads.php?action=delete', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}), credentials:'include'});
+  loadUploads();
+}
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const r = await fetch('/lazio_site/admin/api/uploads.php?action=upload', {method:'POST', body: fd, credentials:'include'});
+  const data = await r.json();
+  if (data.ok) { e.target.reset(); loadUploads(); } else { alert('Upload failed'); }
+});
+loadUploads();
+</script>

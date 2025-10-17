@@ -1,0 +1,287 @@
+<h5>Design Quotation</h5>
+<!-- Add category select to the form -->
+<form id="quoteForm" class="row g-2 align-items-end mb-3">
+  <div class="col-12 col-md-4">
+    <label class="form-label">Client</label>
+    <select id="clientSelect" name="client_id" class="form-select"></select>
+  </div>
+  <div class="col-12 col-md-3">
+    <label class="form-label">Category</label>
+    <select id="categorySelect" class="form-select"></select>
+  </div>
+  <div class="col-12 col-md-3">
+    <label class="form-label">Item</label>
+    <select id="itemSelect" name="item_id" class="form-select"></select>
+  </div>
+  <div class="col-6 col-md-2">
+    <label class="form-label">Qty</label>
+    <input name="quantity" type="number" min="1" value="1" class="form-control">
+  </div>
+  <div class="col-6 col-md-2">
+    <button class="btn btn-primary w-100">Add Item</button>
+  </div>
+</form>
+<div class="table-responsive">
+  <table class="table table-sm">
+    <thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Subtotal</th><th></th></tr></thead>
+    <tbody id="quoteItems"></tbody>
+    <tfoot><tr><th colspan="3" class="text-end">Total</th><th id="quoteTotal">0.00</th><th></th></tr></tfoot>
+  </table>
+</div>
+<div class="d-flex gap-2">
+  <button id="saveQuote" class="btn btn-success">Save as Invoice</button>
+  
+</div>
+<div id="invoiceItemsList"></div>
+<script>
+let allItems = [];
+let items = [];
+
+async function loadFormOptions() {
+  // Load clients
+  const clients = await fetch('/lazio_site/admin/api/clients.php?action=options', {credentials:'include'}).then(r=>r.json());
+  document.getElementById('clientSelect').innerHTML = clients.items.map(c => `<option value="${c.id}">${c.first_name} ${c.last_name}</option>`).join('');
+  // Load categories
+  const cats = await fetch('/lazio_site/admin/api/categories.php?action=list', {credentials:'include'}).then(r=>r.json());
+  document.getElementById('categorySelect').innerHTML = cats.items.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  // Load items
+  const itemsData = await fetch('/lazio_site/admin/api/items.php?action=list', {credentials:'include'}).then(r=>r.json());
+  allItems = itemsData.items;
+  updateItemSelect();
+}
+
+function updateItemSelect() {
+  const catId = Number(document.getElementById('categorySelect').value);
+  const filtered = allItems.filter(i => Number(i.category_id) === catId);
+  document.getElementById('itemSelect').innerHTML = filtered.map(i =>
+    `<option value="${i.id}" data-price="${i.unit_price}" data-name="${i.name}">${i.name}</option>`
+  ).join('');
+}
+
+document.getElementById('categorySelect').addEventListener('change', updateItemSelect);
+
+loadFormOptions();
+
+function render() {
+  const tbody = document.getElementById('quoteItems');
+  // Group items by category
+  const itemsByCat = {};
+  items.forEach(it => {
+    const catId = allItems.find(i => i.name === it.name)?.category_id;
+    const catName = document.querySelector(`#categorySelect option[value="${catId}"]`)?.textContent || 'Other';
+    if (!itemsByCat[catName]) itemsByCat[catName] = [];
+    itemsByCat[catName].push({...it, category: catName});
+  });
+
+  let grandTotal = 0;
+  tbody.innerHTML = Object.entries(itemsByCat).map(([cat, catItems]) => {
+    let catTotal = 0;
+    const rows = catItems.map((it, idx) => {
+      const subtotal = it.quantity * it.unit_price;
+      catTotal += subtotal;
+      grandTotal += subtotal;
+      return `<tr>
+        <td>${it.name}</td>
+        <td>
+          <span class="item-qty">${it.quantity}</span>
+          <input type="number" min="1" class="form-control form-control-sm d-none item-qty-edit" value="${it.quantity}" data-idx="${idx}">
+        </td>
+        <td>${it.unit_price}</td>
+        <td>${subtotal}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary edit-qty-btn" data-idx="${idx}" title="Edit Qty"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-success save-qty-btn d-none" data-idx="${idx}" title="Save"><i class="bi bi-check"></i></button>
+          <button class="btn btn-sm btn-outline-secondary cancel-qty-btn d-none" data-idx="${idx}" title="Cancel"><i class="bi bi-x"></i></button>
+          <button class="btn btn-sm btn-outline-danger" onclick="removeItem(${idx})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>`;
+    }).join('');
+    return `
+      <tr><td colspan="5" class="fw-bold bg-light">${cat}</td></tr>
+      ${rows}
+      <tr><td colspan="3" class="text-end fw-bold">Subtotal for ${cat}</td><td class="fw-bold">${catTotal}</td><td></td></tr>
+    `;
+  }).join('');
+  document.getElementById('quoteTotal').textContent = grandTotal;
+  addQtyEditListeners();
+}
+
+function removeItem(i){ items.splice(i,1); render(); }
+
+document.getElementById('quoteForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const itemSel = document.getElementById('itemSelect');
+  const item_id = Number(itemSel.value);
+  const price = Number(itemSel.options[itemSel.selectedIndex].dataset.price);
+  const name = itemSel.options[itemSel.selectedIndex].dataset.name;
+  const qty = Number(new FormData(e.target).get('quantity')) || 1;
+  items.push({item_id, name, unit_price: price, quantity: qty});
+  render();
+});
+
+const saveBtn = document.getElementById('saveQuote');
+saveBtn.addEventListener('click', async () => {
+  if (saveBtn.disabled) return; // Prevent double click
+  saveBtn.disabled = true; // Disable button
+  const client_id = Number(document.getElementById('clientSelect').value);
+  if (!client_id || items.length === 0) {
+    saveBtn.disabled = false;
+    return;
+  }
+  const r = await fetch('/lazio_site/admin/api/invoices.php?action=create', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    credentials: 'include',
+    body: JSON.stringify({client_id, items})
+  });
+  const data = await r.json();
+  if (data.ok) {
+    alert('Invoice saved!');
+    items = []; render();
+  } else {
+    alert('Failed to save');
+  }
+  saveBtn.disabled = false; // Re-enable button
+});
+
+async function loadCategoriesAndItems() {
+  const cats = await fetch('/lazio_site/admin/api/categories.php?action=list', {credentials:'include'}).then(r=>r.json());
+  const items = await fetch('/lazio_site/admin/api/items.php?action=list', {credentials:'include'}).then(r=>r.json());
+  // Group items by category
+  const itemsByCat = {};
+  items.items.forEach(i => {
+    if (!itemsByCat[i.category]) itemsByCat[i.category] = [];
+    itemsByCat[i.category].push(i);
+  });
+  // Render category select and item select
+  // ...implement as needed...
+}
+
+function renderInvoiceItems(invoiceItems) {
+  const itemsByCat = {};
+  invoiceItems.forEach(i => {
+    if (!itemsByCat[i.category]) itemsByCat[i.category] = [];
+    itemsByCat[i.category].push(i);
+  });
+  document.getElementById('invoiceItemsList').innerHTML = Object.entries(itemsByCat).map(([cat, items]) => `
+    <h6 class="mt-4">${cat}</h6>
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Unit Price</th>
+          <th>Subtotal</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items.map(i => `
+          <tr data-id="${i.id}">
+            <td>${i.name}</td>
+            <td>
+              <span class="item-qty">${i.quantity}</span>
+              <input type="number" min="1" class="form-control form-control-sm d-none item-qty-edit" value="${i.quantity}">
+            </td>
+            <td>${i.unit_price}</td>
+            <td>${i.subtotal}</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-primary edit-qty-btn" title="Edit Qty"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-outline-success save-qty-btn d-none" title="Save"><i class="bi bi-check"></i></button>
+              <button class="btn btn-sm btn-outline-secondary cancel-qty-btn d-none" title="Cancel"><i class="bi bi-x"></i></button>
+              <button class="btn btn-sm btn-outline-danger delete-item-btn" title="Delete"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `).join('');
+  addInvoiceItemListeners();
+}
+
+function addInvoiceItemListeners() {
+  document.querySelectorAll('.edit-qty-btn').forEach(btn => {
+    btn.onclick = function() {
+      const tr = btn.closest('tr');
+      tr.querySelector('.item-qty').classList.add('d-none');
+      tr.querySelector('.item-qty-edit').classList.remove('d-none');
+      tr.querySelector('.edit-qty-btn').classList.add('d-none');
+      tr.querySelector('.save-qty-btn').classList.remove('d-none');
+      tr.querySelector('.cancel-qty-btn').classList.remove('d-none');
+    };
+  });
+  document.querySelectorAll('.cancel-qty-btn').forEach(btn => {
+    btn.onclick = function() {
+      const tr = btn.closest('tr');
+      tr.querySelector('.item-qty').classList.remove('d-none');
+      tr.querySelector('.item-qty-edit').classList.add('d-none');
+      tr.querySelector('.edit-qty-btn').classList.remove('d-none');
+      tr.querySelector('.save-qty-btn').classList.add('d-none');
+      tr.querySelector('.cancel-qty-btn').classList.add('d-none');
+    };
+  });
+  document.querySelectorAll('.save-qty-btn').forEach(btn => {
+    btn.onclick = async function() {
+      const tr = btn.closest('tr');
+      const id = tr.getAttribute('data-id');
+      const quantity = tr.querySelector('.item-qty-edit').value;
+      await fetch('/lazio_site/admin/api/invoices.php?action=update_quantity', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id, quantity}),
+        credentials:'include'
+      });
+      // Reload invoice items after update
+      // ...implement reload...
+    };
+  });
+  document.querySelectorAll('.delete-item-btn').forEach(btn => {
+    btn.onclick = async function() {
+      if (!confirm('Delete this item from invoice?')) return;
+      const tr = btn.closest('tr');
+      const id = tr.getAttribute('data-id');
+      await fetch('/lazio_site/admin/api/invoices.php?action=delete_item', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id}),
+        credentials:'include'
+      });
+      // Reload invoice items after delete
+      // ...implement reload...
+    };
+  });
+}
+
+function addQtyEditListeners() {
+  document.querySelectorAll('.edit-qty-btn').forEach(btn => {
+    btn.onclick = function() {
+      const idx = btn.dataset.idx;
+      const tr = btn.closest('tr');
+      tr.querySelector('.item-qty').classList.add('d-none');
+      tr.querySelector('.item-qty-edit').classList.remove('d-none');
+      btn.classList.add('d-none');
+      tr.querySelector('.save-qty-btn').classList.remove('d-none');
+      tr.querySelector('.cancel-qty-btn').classList.remove('d-none');
+    };
+  });
+  document.querySelectorAll('.cancel-qty-btn').forEach(btn => {
+    btn.onclick = function() {
+      const tr = btn.closest('tr');
+      tr.querySelector('.item-qty').classList.remove('d-none');
+      tr.querySelector('.item-qty-edit').classList.add('d-none');
+      tr.querySelector('.edit-qty-btn').classList.remove('d-none');
+      tr.querySelector('.save-qty-btn').classList.add('d-none');
+      tr.querySelector('.cancel-qty-btn').classList.add('d-none');
+    };
+  });
+  document.querySelectorAll('.save-qty-btn').forEach(btn => {
+    btn.onclick = function() {
+      const idx = btn.dataset.idx;
+      const tr = btn.closest('tr');
+      const newQty = Number(tr.querySelector('.item-qty-edit').value);
+      if (newQty > 0) items[idx].quantity = newQty;
+      render();
+    };
+  });
+}
+</script>

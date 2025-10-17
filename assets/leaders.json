@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Engineer Benard Mathew (aka Lazio Selecta)",
+    "title": "CEO",
+    "image": "/lazio_site/assets/images/ben.jpg",
+    "description": "Visionary leader driving safe, sustainable construction."
+  },
+  {
+    "name": "Engineer Masereka Amos",
+    "title": "Construction Engineer and Planner",
+    "image": "/lazio_site/assets/images/mzee.jpg",
+    "description": "Leads plan drawing and interpretation."
+  },
+  {
+    "name": "Francis Victor",
+    "title": "Constructor",
+    "image": "/lazio_site/assets/images/frank.jpg",
+    "description": "Executes site projects to precision."
+  },
+  {
+    "name": "Denis Junior",
+    "title": "Software Engineer",
+    "image": "/lazio_site/assets/images/Denis.jpg",
+    "description": "Leads the company's digital workflow and tech solutions."
+  }
+] 

@@ -1,0 +1,39 @@
+<h5>Clients</h5>
+<div class="table-responsive">
+  <table class="table table-sm align-middle">
+    <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Username</th><th>Role</th><th></th></tr></thead>
+    <tbody id="clientsBody"></tbody>
+  </table>
+</div>
+<script>
+(async () => {
+  const tbody = document.getElementById('clientsBody');
+  try {
+    const r = await fetch('/lazio_site/admin/api/clients.php?action=list', {credentials:'include'});
+    if (!r.ok) {
+      const msg = r.status === 403 ? 'Access denied. Please log in as admin to view clients.' : 'Failed to load clients.';
+      tbody.innerHTML = `<tr><td colspan="6" class="text-muted small">${msg}</td></tr>`;
+      return;
+    }
+    const data = await r.json();
+    if (!data.items || data.items.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-muted small">No clients yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.items.map(c => `
+      <tr>
+        <td>${c.id}</td>
+        <td>${c.first_name} ${c.last_name}</td>
+        <td>${c.phone}</td>
+        <td>${c.username||'-'}</td>
+        <td>${c.role||'-'}</td>
+        <td class="text-end">
+          <a class="btn btn-sm btn-outline-primary" href="/lazio_site/client/index.php?client_id=${c.id}" data-client="${c.id}">View Invoices</a>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-muted small">Network error loading clients.</td></tr>';
+  }
+})();
+</script>

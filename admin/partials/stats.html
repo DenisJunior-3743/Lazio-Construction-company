@@ -1,0 +1,32 @@
+
+<div class="row g-3">
+  <div class="col-6 col-md-3"><div class="stat"><div class="small-muted">Clients</div><div id="statClients" class="fs-4">—</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat"><div class="small-muted">Invoices</div><div id="statInvoices" class="fs-4">—</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat"><div class="small-muted">Items</div><div id="statItems" class="fs-4">—</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat"><div class="small-muted">Uploads</div><div id="statUploads" class="fs-4">—</div></div></div>
+</div>
+<script>
+(async () => {
+  try {
+    const r = await fetch('/lazio_site/admin/api/stats.php', {credentials:'include'});
+    if (!r.ok) {
+      const msg = r.status === 403 ? '—' : '—';
+      document.getElementById('statClients').textContent = msg;
+      document.getElementById('statInvoices').textContent = msg;
+      document.getElementById('statItems').textContent = msg;
+      document.getElementById('statUploads').textContent = msg;
+      return;
+    }
+    const s = await r.json();
+    document.getElementById('statClients').textContent = s.clients;
+    document.getElementById('statInvoices').textContent = s.invoices;
+    document.getElementById('statItems').textContent = s.items;
+    document.getElementById('statUploads').textContent = s.uploads;
+  } catch (e) {
+    document.getElementById('statClients').textContent = '—';
+    document.getElementById('statInvoices').textContent = '—';
+    document.getElementById('statItems').textContent = '—';
+    document.getElementById('statUploads').textContent = '—';
+  }
+})();
+</script>

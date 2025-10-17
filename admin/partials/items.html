@@ -1,0 +1,178 @@
+<h5>Items</h5>
+<form id="categoryForm" class="row g-2 align-items-end mb-3">
+  <div class="col-8 col-md-6">
+    <input name="name" id="newCategoryInput" class="form-control" placeholder="Add new category">
+  </div>
+  <div class="col-4 col-md-2">
+    <button class="btn btn-secondary w-100" id="addCategoryBtn">Add Category</button>
+  </div>
+</form>
+<form id="itemForm" class="row g-2 align-items-end mb-3">
+  <div class="col-12 col-md-4">
+    <label class="form-label">Category</label>
+    <select name="category_id" id="categorySelect" class="form-select"></select>
+  </div>
+  <div class="col-12 col-md-4">
+    <label class="form-label">Item Name</label>
+    <input name="name" class="form-control" placeholder="e.g., Cement Bag (50kg)">
+  </div>
+  <div class="col-12 col-md-2">
+    <label class="form-label">Unit Price</label>
+    <input name="unit_price" type="number" step="1" class="form-control" placeholder="0">
+  </div>
+  <div class="col-12 col-md-2">
+    <button class="btn btn-primary w-100">Add</button>
+  </div>
+</form>
+<div id="itemsList"></div>
+<script>
+async function loadCategories() {
+  const r = await fetch('/lazio_site/admin/api/categories.php?action=list', {credentials:'include'});
+  const data = await r.json();
+  document.getElementById('categorySelect').innerHTML = data.items.map(c =>
+    `<option value="${c.id}">${c.name}</option>`
+  ).join('');
+}
+document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('newCategoryInput').value.trim();
+  if (!name) return;
+  await fetch('/lazio_site/admin/api/categories.php?action=create', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({name}),
+    credentials: 'include'
+  });
+  document.getElementById('newCategoryInput').value = '';
+  await loadCategories();
+  await reloadItems();
+});
+document.getElementById('itemForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = new FormData(e.target); const data = Object.fromEntries(form.entries());
+  const r = await fetch('/lazio_site/admin/api/items.php?action=create', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(data),
+    credentials:'include'
+  });
+  const res = await r.json();
+  if (!res.ok && res.message) {
+    alert(res.message);
+    return;
+  }
+  e.target.reset(); reloadItems();
+});
+
+async function reloadItems(){
+  const r = await fetch('/lazio_site/admin/api/items.php?action=list', {credentials:'include'});
+  const data = await r.json();
+  const itemsByCat = {};
+  data.items.forEach(i => {
+    if (!itemsByCat[i.category]) itemsByCat[i.category] = [];
+    itemsByCat[i.category].push(i);
+  });
+  const container = document.getElementById('itemsList');
+  container.innerHTML = Object.entries(itemsByCat).map(([cat, items]) => `
+    <h6 class="mt-4">${cat}</h6>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Unit Price</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(i => `
+            <tr data-id="${i.id}">
+              <td>${i.id}</td>
+              <td>
+                <span class="item-name">${i.name}</span>
+                <input type="text" class="form-control form-control-sm d-none item-name-edit" value="${i.name}">
+              </td>
+              <td>
+                <span class="item-price">${i.unit_price}</span>
+                <input type="number" step="1" class="form-control form-control-sm d-none item-price-edit" value="${i.unit_price}">
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary edit-btn" title="Edit"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-success save-btn d-none" title="Save"><i class="bi bi-check"></i></button>
+                <button class="btn btn-sm btn-outline-secondary cancel-btn d-none" title="Cancel"><i class="bi bi-x"></i></button>
+                <button class="btn btn-sm btn-outline-danger delete-btn" title="Delete"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `).join('');
+  addItemRowListeners();
+}
+
+function addItemRowListeners() {
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.onclick = function() {
+      const tr = btn.closest('tr');
+      tr.querySelector('.item-name').classList.add('d-none');
+      tr.querySelector('.item-price').classList.add('d-none');
+      tr.querySelector('.item-name-edit').classList.remove('d-none');
+      tr.querySelector('.item-price-edit').classList.remove('d-none');
+      tr.querySelector('.edit-btn').classList.add('d-none');
+      tr.querySelector('.save-btn').classList.remove('d-none');
+      tr.querySelector('.cancel-btn').classList.remove('d-none');
+    };
+  });
+  document.querySelectorAll('.cancel-btn').forEach(btn => {
+    btn.onclick = function() {
+      const tr = btn.closest('tr');
+      tr.querySelector('.item-name').classList.remove('d-none');
+      tr.querySelector('.item-price').classList.remove('d-none');
+      tr.querySelector('.item-name-edit').classList.add('d-none');
+      tr.querySelector('.item-price-edit').classList.add('d-none');
+      tr.querySelector('.edit-btn').classList.remove('d-none');
+      tr.querySelector('.save-btn').classList.add('d-none');
+      tr.querySelector('.cancel-btn').classList.add('d-none');
+    };
+  });
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.onclick = async function() {
+      const tr = btn.closest('tr');
+      const id = tr.getAttribute('data-id');
+      const name = tr.querySelector('.item-name-edit').value.trim();
+      const unit_price = tr.querySelector('.item-price-edit').value;
+      const r = await fetch('/lazio_site/admin/api/items.php?action=update', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id, name, unit_price}),
+        credentials:'include'
+      });
+      const res = await r.json();
+      if (!res.ok && res.message) {
+        alert(res.message);
+        return;
+      }
+      reloadItems();
+    };
+  });
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.onclick = async function() {
+      if (!confirm('Delete this item?')) return;
+      const tr = btn.closest('tr');
+      const id = tr.getAttribute('data-id');
+      await fetch('/lazio_site/admin/api/items.php?action=delete', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id}),
+        credentials:'include'
+      });
+      reloadItems();
+    };
+  });
+}
+
+loadCategories();
+reloadItems();
+</script>

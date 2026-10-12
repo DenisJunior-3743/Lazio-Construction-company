@@ -1,13 +1,17 @@
-<h5>Items</h5>
-<form id="categoryForm" class="row g-2 align-items-end mb-3">
-  <div class="col-8 col-md-6">
-    <input name="name" id="newCategoryInput" class="form-control" placeholder="Add new category">
-  </div>
-  <div class="col-4 col-md-2">
-    <button class="btn btn-secondary w-100" id="addCategoryBtn">Add Category</button>
-  </div>
-</form>
-<form id="itemForm" class="row g-2 align-items-end mb-3">
+<span class="section-eyebrow"><i class="bi bi-box-seam"></i>Catalog</span>
+<h5 class="fw-bold mb-3">Items & categories</h5>
+<div class="card p-3 mb-3" style="background:var(--card-soft);border-style:dashed;">
+  <form id="categoryForm" class="row g-2 align-items-end">
+    <div class="col-8 col-md-6">
+      <label class="form-label">New Category</label>
+      <input name="name" id="newCategoryInput" class="form-control" placeholder="e.g., Electrical Supplies">
+    </div>
+    <div class="col-4 col-md-2">
+      <button class="btn btn-secondary w-100" id="addCategoryBtn"><i class="bi bi-plus-lg me-1"></i>Add</button>
+    </div>
+  </form>
+</div>
+<form id="itemForm" class="row g-2 align-items-end mb-4">
   <div class="col-12 col-md-4">
     <label class="form-label">Category</label>
     <select name="category_id" id="categorySelect" class="form-select"></select>
@@ -21,7 +25,7 @@
     <input name="unit_price" type="number" step="1" class="form-control" placeholder="0">
   </div>
   <div class="col-12 col-md-2">
-    <button class="btn btn-primary w-100">Add</button>
+    <button class="btn btn-primary w-100"><i class="bi bi-plus-lg me-1"></i>Add</button>
   </div>
 </form>
 <div id="itemsList"></div>
@@ -74,9 +78,9 @@ async function reloadItems(){
   });
   const container = document.getElementById('itemsList');
   container.innerHTML = Object.entries(itemsByCat).map(([cat, items]) => `
-    <h6 class="mt-4">${cat}</h6>
+    <h6 class="mt-4 mb-2 d-flex align-items-center gap-2"><i class="bi bi-tag-fill" style="color:var(--brand);"></i>${cat}<span class="badge" style="background:var(--card-soft);color:var(--muted);">${items.length}</span></h6>
     <div class="table-responsive mb-3">
-      <table class="table table-sm align-middle">
+      <table class="table table-hover align-middle">
         <thead>
           <tr>
             <th>ID</th>

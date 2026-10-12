@@ -5,6 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Lazio Construction Company</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/lazio_site/assets/css/root.css" rel="stylesheet">
@@ -16,7 +19,8 @@
 
     <main class="container my-4">
       <section class="hero p-4 p-md-5 text-center fade-in">
-        <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
+        <span class="section-eyebrow"><i class="bi bi-patch-check-fill"></i>Trusted since day one</span>
+        <div class="d-flex align-items-center justify-content-center gap-3 mb-3 flex-wrap">
           <img src="/lazio_site/assets/images/logo.png" width="80" height="80" class="rounded-circle shadow-sm" alt="Logo">
           <h1 class="display-4 fw-bold m-0 text-gradient">We design, we build, we empower.</h1>
         </div>
@@ -31,12 +35,14 @@
         </div>
       </section>
 
+      <div class="stripe-divider my-4" style="max-width:260px;"></div>
+
       <section class="mt-5">
         <div class="row g-4">
           <div class="col-12 col-lg-4">
             <div class="card p-4 h-100 card-hover">
               <div class="text-center mb-3">
-                <i class="bi bi-bullseye icon-lg"></i>
+                <span class="stat-icon"><i class="bi bi-bullseye"></i></span>
               </div>
               <h5 class="text-center mb-3">Our Goal</h5>
               <p class="text-center text-muted">Deliver innovative, sustainable, high-quality construction solutions that exceed expectations.</p>
@@ -45,7 +51,7 @@
           <div class="col-12 col-lg-4">
             <div class="card p-4 h-100 card-hover">
               <div class="text-center mb-3">
-                <i class="bi bi-eye icon-lg"></i>
+                <span class="stat-icon"><i class="bi bi-binoculars"></i></span>
               </div>
               <h5 class="text-center mb-3">Our Vision</h5>
               <p class="text-center text-muted">Be the region's leading construction company renowned for excellence and innovation.</p>
@@ -54,7 +60,7 @@
           <div class="col-12 col-lg-4">
             <div class="card p-4 h-100 card-hover">
               <div class="text-center mb-3">
-                <i class="bi bi-rocket-takeoff icon-lg"></i>
+                <span class="stat-icon"><i class="bi bi-cone-striped"></i></span>
               </div>
               <h5 class="text-center mb-3">Our Mission</h5>
               <p class="text-center text-muted">Provide reliable services and practical training built on integrity and innovation.</p>
@@ -64,8 +70,11 @@
       </section>
 
       <section class="mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h3 class="m-0 fw-bold">Meet Our Leaders</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div>
+            <span class="section-eyebrow"><i class="bi bi-people-fill"></i>The team</span>
+            <h3 class="m-0 fw-bold">Meet Our Leaders</h3>
+          </div>
           <a class="btn btn-outline-primary btn-sm" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">
             <i class="bi bi-info-circle me-1"></i>About the team
           </a>
@@ -82,16 +91,19 @@
       </section>
 
       <section class="mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h3 class="m-0 fw-bold">Our Activities</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div>
+            <span class="section-eyebrow"><i class="bi bi-images"></i>Recent work</span>
+            <h3 class="m-0 fw-bold">Our Activities</h3>
+          </div>
           <a class="btn btn-outline-primary btn-sm" href="/lazio_site/pages/services.php">
             <i class="bi bi-arrow-right me-1"></i>See all
           </a>
         </div>
-        <div class="mb-3 text-center">
+        <div class="mb-4 text-center btn-group" role="group" aria-label="Filter activities">
           <button class="btn btn-outline-primary btn-sm" onclick="setFilter('all')">All</button>
-          <button class="btn btn-outline-primary btn-sm" onclick="setFilter('image')">Images</button>
-          <button class="btn btn-outline-primary btn-sm" onclick="setFilter('video')">Videos</button>
+          <button class="btn btn-outline-primary btn-sm" onclick="setFilter('image')"><i class="bi bi-image me-1"></i>Images</button>
+          <button class="btn btn-outline-primary btn-sm" onclick="setFilter('video')"><i class="bi bi-camera-video me-1"></i>Videos</button>
         </div>
         <div class="row g-4" id="activities-grid"></div>
       </section>

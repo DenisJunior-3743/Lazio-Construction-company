@@ -58,6 +58,36 @@ CREATE TABLE IF NOT EXISTS uploads (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS agreements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  client_id INT NOT NULL,
+  ceo_name VARCHAR(150) NOT NULL DEFAULT 'ENG: BENARD MATHEW O.',
+  labour_amount DECIMAL(14,2) NOT NULL DEFAULT 0,
+  commitment_fee DECIMAL(14,2) NOT NULL DEFAULT 200000,
+  deposit_percent DECIMAL(5,2) NOT NULL DEFAULT 20.00,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS agreement_phases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  agreement_id INT NOT NULL,
+  phase_number INT NOT NULL,
+  content TEXT NOT NULL,
+  FOREIGN KEY (agreement_id) REFERENCES agreements(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS agreement_representatives (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  agreement_id INT NOT NULL,
+  side ENUM('company','client') NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  position VARCHAR(150) NOT NULL,
+  contact VARCHAR(100) NULL,
+  sort_order INT NOT NULL DEFAULT 1,
+  FOREIGN KEY (agreement_id) REFERENCES agreements(id) ON DELETE CASCADE
+);
+
 -- Seed admin (username: admin, password: admin123) - change after first login!
 INSERT INTO users (username, password_hash, role)
 VALUES ('admin', '$2y$10$S6sG16XpM0yR9f3tUz3OhuOYG7M6wH6N.HZ0cB1g1eJ32jQH5jKvm', 'admin')

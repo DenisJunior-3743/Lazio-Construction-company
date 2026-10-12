@@ -64,7 +64,7 @@ function renderActivities() {
             ${videos.map(item => `
               <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 card-hover">
-                  <video class="w-100 mb-2" style="height:120px;object-fit:cover;" controls src="${item.path}"></video>
+                  <video class="w-100 mb-2 activity-video" controls src="${item.path}"></video>
                   <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                       <span class="fw-semibold">${item.category || 'Activity'}</span>

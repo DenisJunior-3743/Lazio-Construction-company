@@ -43,8 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Simple router for fetching inner pages
-  document.querySelectorAll('[data-fetch]').forEach(btn => {
+  const navButtons = document.querySelectorAll('[data-fetch]');
+  navButtons.forEach(btn => {
     btn.addEventListener('click', async () => {
+      navButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       const url = btn.getAttribute('data-fetch');
       await loadPartial(url);
     });

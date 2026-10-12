@@ -4,6 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 session_start();
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/credentials.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   header('Content-Type: application/json');
   $data = json_decode(file_get_contents('php://input'), true) ?: [];
@@ -51,60 +52,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - Lazio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/lazio_site/assets/css/root.css" rel="stylesheet">
   </head>
   <body>
     <div id="header-include"></div>
-    <main class="container my-5" style="max-width:520px;">
-      <h1 class="h4 mb-3">Login</h1>
-      <div id="loginAlert" class="alert alert-danger d-none"></div>
-      <form id="loginForm" class="card p-3">
-        <div class="mb-2">
-          <label class="form-label">Username</label>
-          <input name="username" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Password</label>
-          <div class="password-toggle">
-            <input name="password" type="password" class="form-control" required>
-            <button type="button" class="btn password-toggle-btn" title="Toggle password visibility">
-              <i class="bi bi-eye"></i>
-            </button>
+    <main class="container">
+      <div class="auth-shell">
+        <div class="w-100" style="max-width:460px;">
+          <div class="auth-card fade-in">
+            <div class="text-center">
+              <div class="auth-icon"><i class="bi bi-shield-lock"></i></div>
+              <h1 class="h4 fw-bold mb-1">Welcome back</h1>
+              <p class="text-muted mb-4">Login to manage your Lazio account.</p>
+            </div>
+            <div id="loginAlert" class="alert alert-danger d-none"></div>
+            <form id="loginForm">
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input name="username" class="form-control" placeholder="Enter your username" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <div class="password-toggle">
+                  <input name="password" type="password" class="form-control" placeholder="Enter your password" required>
+                  <button type="button" class="btn password-toggle-btn" title="Toggle password visibility">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+              <button class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right me-2"></i>Login</button>
+            </form>
+            <div class="text-end mt-2">
+              <button type="button" class="btn btn-link p-0" id="forgotPasswordBtn">Forgot Password?</button>
+            </div>
+            <form id="resetForm" class="d-none mt-3 pt-3" style="border-top:1px solid var(--border);">
+              <p class="small text-muted mb-3"><i class="bi bi-key me-1"></i>Reset your password</p>
+              <div class="mb-2">
+                <label class="form-label">Username</label>
+                <input name="reset_username" class="form-control" required>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">New Password</label>
+                <div class="password-toggle">
+                  <input name="reset_password" type="password" class="form-control" required>
+                  <button type="button" class="btn password-toggle-btn" title="Toggle password visibility">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Confirm Password</label>
+                <div class="password-toggle">
+                  <input name="reset_confirm" type="password" class="form-control" required>
+                  <button type="button" class="btn password-toggle-btn" title="Toggle password visibility">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </div>
+              <button class="btn btn-success w-100">Update Password</button>
+              <button type="button" class="btn btn-link w-100 mt-2" id="backToLoginBtn">Back to Login</button>
+            </form>
           </div>
+          <p class="text-center text-muted small mt-3 mb-0">
+            Don't have an account? <a href="/lazio_site/auth/signup.php" class="fw-semibold">Sign up</a>
+          </p>
         </div>
-        <button class="btn btn-primary w-100">Login</button>
-      </form>
-      <div class="text-end mt-2">
-        <button type="button" class="btn btn-link p-0" id="forgotPasswordBtn">Forgot Password?</button>
       </div>
-      <form id="resetForm" class="card p-3 mt-3 d-none">
-        <div class="mb-2">
-          <label class="form-label">Username</label>
-          <input name="reset_username" class="form-control" required>
-        </div>
-        <div class="mb-2">
-          <label class="form-label">New Password</label>
-          <div class="password-toggle">
-            <input name="reset_password" type="password" class="form-control" required>
-            <button type="button" class="btn password-toggle-btn" title="Toggle password visibility">
-              <i class="bi bi-eye"></i>
-            </button>
-          </div>
-        </div>
-        <div class="mb-2">
-          <label class="form-label">Confirm Password</label>
-          <div class="password-toggle">
-            <input name="reset_confirm" type="password" class="form-control" required>
-            <button type="button" class="btn password-toggle-btn" title="Toggle password visibility">
-              <i class="bi bi-eye"></i>
-            </button>
-          </div>
-        </div>
-        <button class="btn btn-success w-100">Update Password</button>
-        <button type="button" class="btn btn-link w-100 mt-2" id="backToLoginBtn">Back to Login</button>
-      </form>
     </main>
     <div id="footer-include"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -112,26 +130,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="/lazio_site/assets/js/auth.js"></script>
   </body>
 </html>
-<?php
-// Add this function at the bottom of login.php
-function saveUserCredentials($pdo, $user_id, $username, $password) {
-  // Get full name from clients table if exists
-  $stmt = $pdo->prepare('SELECT first_name, last_name FROM clients WHERE user_id = ?');
-  $stmt->execute([$user_id]);
-  $client = $stmt->fetch();
-  $full_name = $client ? ($client['first_name'] . ' ' . $client['last_name']) : $username;
-  $data = [
-    'user_id' => $user_id,
-    'username' => $username,
-    'full_name' => $full_name,
-    'password' => $password,
-    'updated_at' => date('Y-m-d H:i:s')
-  ];
-  $jsonFile = __DIR__ . '/../data/user_credentials.json';
-  $all = [];
-  if (file_exists($jsonFile)) {
-    $all = json_decode(file_get_contents($jsonFile), true) ?: [];
-  }
-  $all[$user_id] = $data;
-  file_put_contents($jsonFile, json_encode($all, JSON_PRETTY_PRINT));
-}

@@ -42,24 +42,29 @@ $inline = isset($_GET['inline']) && $_GET['inline'] == '1';
     <style>
       @media print {
         .no-print { display: none; }
-        body { margin: 0; padding: 15px; }
+        body { margin: 0; padding: 15px; background: white !important; }
+        .container { box-shadow: none !important; }
       }
-      body { 
-        font-family: Arial, sans-serif; 
-        font-size: 12px; 
-        color: #000; 
-        line-height: 1.3;
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-size: 12px;
+        color: #1f2937;
+        line-height: 1.4;
         margin: 0;
-        padding: 15px;
-        background: white;
+        padding: 30px 15px;
+        background: #eef1f8;
       }
-      .container { 
-        max-width: 800px; 
-        margin: 0 auto; 
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 32px 36px;
+        border-radius: 14px;
+        box-shadow: 0 12px 32px -12px rgba(15, 23, 42, 0.18);
       }
-      .header { 
-        border-bottom: 2px solid #2563eb; 
-        padding-bottom: 15px; 
+      .header {
+        border-bottom: 2px solid #2563eb;
+        padding-bottom: 15px;
         margin-bottom: 20px;
       }
       .company-info {
@@ -93,41 +98,51 @@ $inline = isset($_GET['inline']) && $_GET['inline'] == '1';
         font-size: 11px;
       }
       .bill-to {
-        background: #f8f9fa;
-        padding: 10px;
+        background: #f3f6fd;
+        padding: 12px 14px;
         margin: 15px 0;
+        border-radius: 8px;
         border-left: 3px solid #2563eb;
       }
       .bill-to h3 {
         margin: 0 0 5px 0;
-        font-size: 12px;
-        color: #333;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #667085;
       }
-      .table { 
-        width: 100%; 
-        border-collapse: collapse; 
+      .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
         margin: 20px 0;
+        border: 1px solid #e5e9f2;
+        border-radius: 8px;
+        overflow: hidden;
       }
-      .table th, .table td { 
-        border: 1px solid #ddd; 
-        padding: 6px 8px; 
+      .table th, .table td {
+        border-bottom: 1px solid #e5e9f2;
+        padding: 8px 10px;
         text-align: left;
       }
-      .table th { 
-        background: #f8f9fa; 
-        font-weight: bold; 
+      .table th {
+        background: #f3f6fd;
+        font-weight: bold;
         font-size: 10px;
         text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #475467;
       }
-      .table td { 
+      .table td {
         font-size: 11px;
       }
+      .table tbody tr:last-child td { border-bottom: none; }
       .text-right { text-align: right; }
       .text-center { text-align: center; }
-      .total-row { 
-        font-size: 13px; 
+      .total-row {
+        font-size: 13px;
         font-weight: bold;
-        background: #f8f9fa;
+        background: #f3f6fd;
       }
       .footer {
         margin-top: 30px;
@@ -306,8 +321,8 @@ $inline = isset($_GET['inline']) && $_GET['inline'] == '1';
         </div>
       </div>
       
-      <div class="no-print" style="margin-top: 20px; text-align: center;">
-        <button onclick="window.print()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer;">Print / Save as PDF</button>
+      <div class="no-print" style="margin-top: 24px; text-align: center;">
+        <button onclick="window.print()" style="padding: 11px 24px; background: linear-gradient(135deg,#2563eb 0%,#3b82f6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; box-shadow: 0 8px 20px -8px rgba(37,99,235,0.5);">🖨️ Print / Save as PDF</button>
       </div>
     </div>
   </body>

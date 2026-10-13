@@ -1,0 +1,484 @@
+<span class="section-eyebrow"><i class="bi bi-mortarboard"></i>Internships</span>
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h5 class="fw-bold mb-0">Interns &amp; applications</h5>
+</div>
+
+<ul class="nav nav-pills gap-2 mb-4" id="internPills">
+  <li class="nav-item"><button type="button" class="nav-link active" data-pane="internsPane"><i class="bi bi-people me-1"></i>Interns</button></li>
+  <li class="nav-item"><button type="button" class="nav-link" data-pane="applicationsPane"><i class="bi bi-inbox me-1"></i>Applications <span class="badge text-bg-warning ms-1 d-none" id="pendingBadge">0</span></button></li>
+  <li class="nav-item"><button type="button" class="nav-link" data-pane="servicesPane"><i class="bi bi-tools me-1"></i>Training areas</button></li>
+</ul>
+
+<!-- ============ Interns ============ -->
+<div id="internsPane" class="intern-pane">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <input id="internSearch" class="form-control form-control-sm" style="max-width:280px;" placeholder="Search name, reg. number or institution">
+    <button class="btn btn-primary btn-sm" id="registerInternBtn"><i class="bi bi-person-plus-fill me-1"></i>Register Intern</button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>Reg. No.</th><th>Name</th><th>Institution</th><th>Course</th><th>Phone</th><th class="text-center">Docs</th><th class="text-center">Apps</th><th class="text-center">Letters</th><th class="text-end">Actions</th></tr></thead>
+      <tbody id="internsBody"><tr><td colspan="9" class="text-center text-muted py-4">Loading interns...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ Applications ============ -->
+<div id="applicationsPane" class="intern-pane d-none">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <select id="appStatusFilter" class="form-select form-select-sm w-auto">
+      <option value="">All applications</option>
+      <option value="pending">Pending</option>
+      <option value="accepted">Accepted</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <button class="btn btn-outline-primary btn-sm" id="refreshAppsBtn"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>#</th><th>Intern</th><th>Period</th><th>Training areas</th><th>Fee</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody id="applicationsBody"><tr><td colspan="7" class="text-center text-muted py-4">Loading applications...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ Training areas ============ -->
+<div id="servicesPane" class="intern-pane d-none">
+  <p class="small text-muted">These are the training areas shown on the public internship page, offered in the application form and available when drafting acceptance letters. Keep each name free of commas &mdash; letters join the selected areas with commas ("A, B, and C").</p>
+  <form id="addServiceForm" class="d-flex gap-2 mb-3" style="max-width:520px;">
+    <input id="newServiceName" class="form-control" placeholder="New training area, e.g. Welding &amp; Fabrication" maxlength="150" required>
+    <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg me-1"></i>Add</button>
+  </form>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>Training area</th><th class="text-center">Visible</th><th class="text-end">Actions</th></tr></thead>
+      <tbody id="servicesBody"><tr><td colspan="3" class="text-center text-muted py-4">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Register / edit intern -->
+<div class="modal fade" id="internModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="internForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="internModalTitle"><i class="bi bi-person-plus-fill me-2"></i>Register Intern</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="internFormAlert" class="alert alert-danger d-none"></div>
+          <div class="row g-3">
+            <div class="col-12"><label class="form-label">Full Names</label><input name="full_name" class="form-control" required></div>
+            <div class="col-12 col-md-6"><label class="form-label">Registration Number</label><input name="reg_number" class="form-control" placeholder="e.g. UVT088/U/26/M/EI/0137" required><div class="form-text">This is the intern's username.</div></div>
+            <div class="col-12 col-md-6"><label class="form-label">Phone</label><input name="phone" class="form-control" inputmode="numeric" maxlength="10" required></div>
+            <div class="col-12"><label class="form-label">Institution</label><input name="institution" class="form-control" required></div>
+            <div class="col-12"><label class="form-label">Course / Programme</label><input name="course" class="form-control" required></div>
+            <div class="col-12" id="internPasswordField">
+              <label class="form-label">Password</label>
+              <input name="password" class="form-control" autocomplete="off" placeholder="Leave blank to generate one">
+              <div class="form-text">The intern can change it later from their portal.</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="internFormSubmit"><i class="bi bi-check2-circle me-1"></i>Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Credentials (shown once) -->
+<div class="modal fade" id="credsModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-key me-2"></i>Login details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p class="mb-2" id="credsIntro"></p>
+        <div class="border rounded p-3" style="background:var(--card-soft);">
+          <div>Username (reg. number): <strong id="credsUser"></strong></div>
+          <div>Password: <strong id="credsPass"></strong></div>
+        </div>
+        <p class="small text-muted mt-3 mb-0">Share these with the intern now &mdash; the password is not shown again. They can change it from their portal.</p>
+      </div>
+      <div class="modal-footer"><button class="btn btn-outline-primary" id="copyCredsBtn"><i class="bi bi-clipboard me-1"></i>Copy</button><button class="btn btn-primary" data-bs-dismiss="modal">Done</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- View intern -->
+<div class="modal fade" id="viewInternModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="bi bi-person-badge me-2"></i><span id="viewInternTitle">Intern</span></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="viewInternBody"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var API = '/lazio_site/admin/api/interns.php';
+  var SERVICES_API = '/lazio_site/admin/api/internship_services.php';
+  var DOC_TYPES = {
+    application_letter: 'Application letter', student_id: 'Student ID', national_id: 'National ID / Passport',
+    academic_document: 'Academic document', cv: 'CV / Resume', recommendation: 'Recommendation letter', other: 'Other'
+  };
+  var STATUS = {
+    pending:  {cls: 'text-bg-warning', label: 'Pending'},
+    accepted: {cls: 'text-bg-success', label: 'Accepted'},
+    rejected: {cls: 'text-bg-danger',  label: 'Rejected'}
+  };
+
+  var interns = [];
+  var applications = [];
+  var editingId = null;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
+    });
+  }
+  function fmtDate(s) { return (window.LazioLetter && LazioLetter.formatDate(s)) || s || ''; }
+  function fmtStamp(s) { return s ? fmtDate(String(s).slice(0, 10)) : ''; }
+  function fmtSize(b) { b = Number(b) || 0; return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  function joinList(a) { return window.LazioLetter ? LazioLetter.joinList(a) : (a || []).join(', '); }
+
+  // Always resolves with an object; on failure it carries the server's own message when there is one.
+  async function parse(r) {
+    var j = null;
+    try { j = await r.json(); } catch (e) {}
+    if (!r.ok) return {ok: false, message: (j && j.message) || (r.status === 403 ? 'Access denied. Please log in as admin.' : 'Request failed.')};
+    return j || {ok: false, message: 'Unexpected response from the server.'};
+  }
+  async function get(url) {
+    return parse(await fetch(url, {credentials: 'include'}));
+  }
+  async function post(url, payload) {
+    return parse(await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(payload || {})}));
+  }
+  function modal(id) { return bootstrap.Modal.getOrCreateInstance($(id)); }
+
+  /* ---------- Pills ---------- */
+
+  function showPane(id) {
+    document.querySelectorAll('.intern-pane').forEach(function (p) { p.classList.toggle('d-none', p.id !== id); });
+    document.querySelectorAll('#internPills [data-pane]').forEach(function (b) { b.classList.toggle('active', b.dataset.pane === id); });
+    if (id === 'applicationsPane') loadApplications();
+    if (id === 'servicesPane') loadServices();
+  }
+  $('internPills').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-pane]');
+    if (b) showPane(b.dataset.pane);
+  });
+
+  /* ---------- Interns ---------- */
+
+  function renderInterns() {
+    var q = $('internSearch').value.trim().toLowerCase();
+    var rows = interns.filter(function (i) {
+      return !q || (i.full_name + ' ' + i.reg_number + ' ' + i.institution).toLowerCase().indexOf(q) !== -1;
+    });
+    var tbody = $('internsBody');
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">' + (interns.length ? 'No interns match your search.' : 'No interns registered yet.') + '</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function (i) {
+      return '<tr>' +
+        '<td class="fw-semibold">' + esc(i.reg_number) + '</td>' +
+        '<td>' + esc(i.full_name) + (i.registered_by === 'admin' ? ' <span class="badge text-bg-light border ms-1" title="Registered by the office">office</span>' : '') + '</td>' +
+        '<td>' + esc(i.institution) + '</td>' +
+        '<td class="small">' + esc(i.course) + '</td>' +
+        '<td>' + esc(i.phone) + '</td>' +
+        '<td class="text-center">' + i.documents + '</td>' +
+        '<td class="text-center">' + i.applications + '</td>' +
+        '<td class="text-center">' + i.letters + '</td>' +
+        '<td class="text-end"><div class="btn-group btn-group-sm">' +
+          '<button class="btn btn-outline-primary" data-act="view" data-id="' + i.id + '" title="View details"><i class="bi bi-eye"></i></button>' +
+          '<button class="btn btn-outline-secondary" data-act="edit" data-id="' + i.id + '" title="Edit"><i class="bi bi-pencil"></i></button>' +
+          '<button class="btn btn-outline-warning" data-act="password" data-id="' + i.id + '" title="Reset password"><i class="bi bi-key"></i></button>' +
+          '<button class="btn btn-outline-danger" data-act="delete" data-id="' + i.id + '" title="Delete"><i class="bi bi-trash"></i></button>' +
+        '</div></td></tr>';
+    }).join('');
+  }
+
+  async function loadInterns() {
+    var r = await get(API + '?action=list');
+    if (r.ok === false) { $('internsBody').innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">' + esc(r.message) + '</td></tr>'; return; }
+    interns = r.items || [];
+    renderInterns();
+  }
+  $('internSearch').addEventListener('input', renderInterns);
+
+  function showCredentials(intro, username, password) {
+    $('credsIntro').textContent = intro;
+    $('credsUser').textContent = username;
+    $('credsPass').textContent = password;
+    modal('credsModal').show();
+  }
+  $('copyCredsBtn').addEventListener('click', function () {
+    var text = 'Username: ' + $('credsUser').textContent + '\nPassword: ' + $('credsPass').textContent;
+    if (navigator.clipboard) navigator.clipboard.writeText(text);
+  });
+
+  function openInternForm(intern) {
+    editingId = intern ? intern.id : null;
+    var f = $('internForm');
+    f.reset();
+    $('internFormAlert').classList.add('d-none');
+    $('internModalTitle').innerHTML = intern ? '<i class="bi bi-pencil me-2"></i>Edit Intern' : '<i class="bi bi-person-plus-fill me-2"></i>Register Intern';
+    $('internPasswordField').classList.toggle('d-none', !!intern);
+    if (intern) {
+      f.full_name.value = intern.full_name; f.reg_number.value = intern.reg_number; f.phone.value = intern.phone;
+      f.institution.value = intern.institution; f.course.value = intern.course;
+    }
+    modal('internModal').show();
+  }
+  $('registerInternBtn').addEventListener('click', function () { openInternForm(null); });
+  $('internForm').phone.addEventListener('input', function (e) { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
+
+  $('internForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var f = e.target, box = $('internFormAlert'), btn = $('internFormSubmit');
+    var payload = {full_name: f.full_name.value, reg_number: f.reg_number.value, phone: f.phone.value, institution: f.institution.value, course: f.course.value};
+    if (editingId) payload.id = editingId; else payload.password = f.password.value;
+    btn.disabled = true;
+    var r = await post(API + '?action=' + (editingId ? 'update' : 'create'), payload);
+    btn.disabled = false;
+    if (!r.ok) { box.textContent = r.message || 'Could not save.'; box.classList.remove('d-none'); return; }
+    modal('internModal').hide();
+    await loadInterns();
+    if (!editingId) {
+      var pw = r.generated_password || f.password.value;
+      showCredentials('Intern registered.', r.username, pw);
+    }
+  });
+
+  async function viewIntern(id) {
+    var r = await get(API + '?action=get&id=' + id);
+    if (!r.ok) { alert(r.message || 'Could not load the intern.'); return; }
+    var i = r.intern;
+    $('viewInternTitle').textContent = i.full_name;
+    var docs = r.documents.length ? r.documents.map(function (d) {
+      return '<tr><td>' + esc(DOC_TYPES[d.doc_type] || d.doc_type) + '</td><td>' + esc(d.original_name) + '</td><td>' + fmtSize(d.file_size) + '</td>' +
+        '<td class="text-end"><div class="btn-group btn-group-sm"><a class="btn btn-outline-primary" target="_blank" href="/lazio_site/intern/file.php?id=' + d.id + '"><i class="bi bi-eye"></i></a>' +
+        '<button class="btn btn-outline-danger" data-act="deldoc" data-id="' + d.id + '" data-intern="' + i.id + '"><i class="bi bi-trash"></i></button></div></td></tr>';
+    }).join('') : '<tr><td colspan="4" class="text-muted small">No documents uploaded.</td></tr>';
+    var apps = r.applications.length ? r.applications.map(function (a) {
+      var st = STATUS[a.status] || STATUS.pending;
+      return '<tr><td>#' + a.id + '</td><td>' + esc(fmtDate(a.start_date)) + ' &ndash; ' + esc(fmtDate(a.end_date)) + '</td><td class="small">' + esc(joinList(a.services)) + '</td>' +
+        '<td><span class="badge ' + st.cls + '">' + st.label + '</span> ' + (a.fee_paid ? '<span class="badge text-bg-success">Fee paid</span>' : '<span class="badge text-bg-secondary">Fee unpaid</span>') + '</td>' +
+        '<td class="text-end"><button class="btn btn-outline-primary btn-sm" data-act="letter" data-intern="' + i.id + '" data-app="' + a.id + '" title="Draft acceptance letter"><i class="bi bi-envelope-paper"></i></button></td></tr>';
+    }).join('') : '<tr><td colspan="5" class="text-muted small">No applications yet.</td></tr>';
+    var letters = r.letters.length ? r.letters.map(function (l) {
+      return '<tr><td class="fw-semibold">' + esc(l.ref) + '</td><td>' + esc(fmtDate(l.start_date)) + ' &ndash; ' + esc(fmtDate(l.end_date)) + '</td>' +
+        '<td>' + (l.sent_to_intern ? '<span class="badge text-bg-success">Sent</span>' : '<span class="badge text-bg-warning">Draft</span>') + '</td>' +
+        '<td class="text-end"><a class="btn btn-outline-primary btn-sm" target="_blank" href="/lazio_site/intern/print_letter.php?id=' + l.id + '"><i class="bi bi-printer"></i></a></td></tr>';
+    }).join('') : '<tr><td colspan="4" class="text-muted small">No letters yet.</td></tr>';
+
+    $('viewInternBody').innerHTML =
+      '<div class="row g-2 mb-3 small">' +
+        '<div class="col-6"><div class="text-muted">Registration No.</div><strong>' + esc(i.reg_number) + '</strong></div>' +
+        '<div class="col-6"><div class="text-muted">Phone</div><strong>' + esc(i.phone) + '</strong></div>' +
+        '<div class="col-6"><div class="text-muted">Institution</div><strong>' + esc(i.institution) + '</strong></div>' +
+        '<div class="col-6"><div class="text-muted">Course</div><strong>' + esc(i.course) + '</strong></div>' +
+        '<div class="col-6"><div class="text-muted">Registered</div>' + esc(fmtStamp(i.created_at)) + ' (' + (i.registered_by === 'admin' ? 'by the office' : 'self-registered') + ')</div>' +
+      '</div>' +
+      '<h6 class="fw-bold">Documents</h6><div class="table-responsive mb-3"><table class="table table-sm align-middle"><thead><tr><th>Type</th><th>File</th><th>Size</th><th></th></tr></thead><tbody>' + docs + '</tbody></table></div>' +
+      '<h6 class="fw-bold">Applications</h6><div class="table-responsive mb-3"><table class="table table-sm align-middle"><thead><tr><th>#</th><th>Period</th><th>Areas</th><th>Status</th><th></th></tr></thead><tbody>' + apps + '</tbody></table></div>' +
+      '<h6 class="fw-bold">Acceptance letters</h6><div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Ref</th><th>Period</th><th>Status</th><th></th></tr></thead><tbody>' + letters + '</tbody></table></div>' +
+      '<div class="mt-3"><button class="btn btn-primary btn-sm" data-act="letter" data-intern="' + i.id + '" data-app=""><i class="bi bi-envelope-paper me-1"></i>Draft acceptance letter</button></div>';
+    modal('viewInternModal').show();
+  }
+
+  function goDraftLetter(internId, appId) {
+    window.__lazioLetterPrefill = {internId: Number(internId) || 0, applicationId: Number(appId) || 0};
+    var m = bootstrap.Modal.getInstance($('viewInternModal'));
+    if (m) m.hide();
+    var nav = document.querySelector('[data-fetch$="acceptance_letters.html"]');
+    if (nav) nav.click();
+  }
+
+  $('viewInternBody').addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    if (b.dataset.act === 'letter') goDraftLetter(b.dataset.intern, b.dataset.app);
+    if (b.dataset.act === 'deldoc') {
+      if (!confirm('Delete this document? This cannot be undone.')) return;
+      await post(API + '?action=document_delete', {id: Number(b.dataset.id)});
+      viewIntern(Number(b.dataset.intern));
+      loadInterns();
+    }
+  });
+
+  $('internsBody').addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var id = Number(b.dataset.id);
+    var intern = interns.find(function (i) { return i.id === id; });
+    if (!intern) return;
+    if (b.dataset.act === 'view') viewIntern(id);
+    if (b.dataset.act === 'edit') openInternForm(intern);
+    if (b.dataset.act === 'password') {
+      var pw = prompt('New password for ' + intern.full_name + ' (' + intern.reg_number + ').\nLeave blank to generate one:', '');
+      if (pw === null) return;
+      var r = await post(API + '?action=reset_password', {id: id, password: pw});
+      if (!r.ok) { alert(r.message || 'Could not reset the password.'); return; }
+      showCredentials('Password updated.', intern.reg_number, r.generated_password || pw);
+    }
+    if (b.dataset.act === 'delete') {
+      if (!confirm('Delete ' + intern.full_name + '?\n\nThis also deletes their applications, uploaded documents and acceptance letters, and cannot be undone.')) return;
+      var d = await post(API + '?action=delete', {id: id});
+      if (!d.ok) { alert(d.message || 'Could not delete.'); return; }
+      loadInterns();
+    }
+  });
+
+  /* ---------- Applications ---------- */
+
+  function updatePendingBadge(list) {
+    var n = (list || []).filter(function (a) { return a.status === 'pending'; }).length;
+    var badge = $('pendingBadge');
+    badge.textContent = n;
+    badge.classList.toggle('d-none', n === 0 || !!$('appStatusFilter').value);
+  }
+
+  function renderApplications() {
+    var tbody = $('applicationsBody');
+    if (!applications.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No applications found.</td></tr>'; return; }
+    tbody.innerHTML = applications.map(function (a) {
+      var st = STATUS[a.status] || STATUS.pending;
+      var docs = (a.documents || []).map(function (d) {
+        return '<a class="badge text-bg-light border me-1" target="_blank" href="/lazio_site/intern/file.php?id=' + d.id + '"><i class="bi bi-paperclip me-1"></i>' + esc(DOC_TYPES[d.doc_type] || d.doc_type) + '</a>';
+      }).join('');
+      return '<tr>' +
+        '<td class="fw-semibold">#' + a.id + '<div class="small text-muted">' + esc(fmtStamp(a.created_at)) + '</div></td>' +
+        '<td>' + esc(a.full_name) + '<div class="small text-muted">' + esc(a.reg_number) + ' &middot; ' + esc(a.institution) + '</div></td>' +
+        '<td class="small">' + esc(fmtDate(a.start_date)) + '<br>to ' + esc(fmtDate(a.end_date)) + '</td>' +
+        '<td class="small">' + esc(joinList(a.services)) +
+          (a.institution_modules ? '<div class="text-muted mt-1">Modules: ' + esc(a.institution_modules) + '</div>' : '') +
+          (a.message ? '<div class="text-muted mt-1">&ldquo;' + esc(a.message) + '&rdquo;</div>' : '') +
+          (docs ? '<div class="mt-1">' + docs + '</div>' : '') + '</td>' +
+        '<td>' + (a.fee_paid ? '<span class="badge text-bg-success">Paid</span>' : '<span class="badge text-bg-secondary">Unpaid</span>') +
+          (a.fee_reference ? '<div class="small text-muted mt-1">Ref: ' + esc(a.fee_reference) + '</div>' : '') + '</td>' +
+        '<td><span class="badge ' + st.cls + '">' + st.label + '</span>' +
+          (a.letters ? '<div class="small text-muted mt-1">' + a.letters + ' letter' + (a.letters > 1 ? 's' : '') + '</div>' : '') +
+          (a.admin_note ? '<div class="small text-muted mt-1" title="Note shown to the intern">' + esc(a.admin_note) + '</div>' : '') + '</td>' +
+        '<td class="text-end"><div class="btn-group btn-group-sm">' +
+          '<button class="btn btn-outline-success" data-act="fee" data-id="' + a.id + '" title="' + (a.fee_paid ? 'Mark fee as unpaid' : 'Mark fee as received') + '"><i class="bi bi-cash-coin"></i></button>' +
+          (a.status !== 'accepted' ? '<button class="btn btn-outline-success" data-act="accept" data-id="' + a.id + '" title="Accept"><i class="bi bi-check-lg"></i></button>' : '') +
+          (a.status !== 'rejected' ? '<button class="btn btn-outline-danger" data-act="reject" data-id="' + a.id + '" title="Reject"><i class="bi bi-x-lg"></i></button>' : '') +
+          (a.status !== 'pending' ? '<button class="btn btn-outline-secondary" data-act="reopen" data-id="' + a.id + '" title="Set back to pending"><i class="bi bi-arrow-counterclockwise"></i></button>' : '') +
+          '<button class="btn btn-outline-primary" data-act="letter" data-id="' + a.id + '" title="Draft acceptance letter"><i class="bi bi-envelope-paper"></i></button>' +
+          '<button class="btn btn-outline-secondary" data-act="note" data-id="' + a.id + '" title="Note for the intern"><i class="bi bi-chat-left-text"></i></button>' +
+          '<button class="btn btn-outline-danger" data-act="remove" data-id="' + a.id + '" title="Delete"><i class="bi bi-trash"></i></button>' +
+        '</div></td></tr>';
+    }).join('');
+  }
+
+  async function loadApplications() {
+    var status = $('appStatusFilter').value;
+    var r = await get(API + '?action=applications' + (status ? '&status=' + status : ''));
+    if (r.ok === false) { $('applicationsBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">' + esc(r.message) + '</td></tr>'; return; }
+    applications = r.items || [];
+    renderApplications();
+    updatePendingBadge(applications);
+  }
+  $('appStatusFilter').addEventListener('change', loadApplications);
+  $('refreshAppsBtn').addEventListener('click', loadApplications);
+
+  $('applicationsBody').addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var id = Number(b.dataset.id);
+    var a = applications.find(function (x) { return x.id === id; });
+    if (!a) return;
+    var act = b.dataset.act, payload = {id: id}, r;
+
+    if (act === 'letter') { goDraftLetter(a.intern_id, a.id); return; }
+    if (act === 'remove') {
+      if (!confirm('Delete application #' + id + ' from ' + a.full_name + '?')) return;
+      r = await post(API + '?action=application_delete', {id: id});
+    } else {
+      if (act === 'fee') payload.fee_paid = a.fee_paid ? 0 : 1;
+      if (act === 'accept') {
+        if (!a.fee_paid && !confirm('The organisation fee has not been marked as received for this application.\nAccept it anyway?')) return;
+        payload.status = 'accepted';
+      }
+      if (act === 'reject') {
+        var reason = prompt('Optional note for the intern (e.g. why it was not accepted):', a.admin_note || '');
+        if (reason === null) return;
+        payload.status = 'rejected'; payload.admin_note = reason;
+      }
+      if (act === 'reopen') payload.status = 'pending';
+      if (act === 'note') {
+        var note = prompt('Note shown to the intern on their application:', a.admin_note || '');
+        if (note === null) return;
+        payload.admin_note = note;
+      }
+      r = await post(API + '?action=application_update', payload);
+    }
+    if (!r.ok) { alert(r.message || 'Could not update.'); return; }
+    loadApplications();
+    loadInterns();
+  });
+
+  /* ---------- Training areas ---------- */
+
+  async function loadServices() {
+    var tbody = $('servicesBody');
+    var r = await get(SERVICES_API + '?action=list');
+    if (r.ok === false) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">' + esc(r.message) + '</td></tr>'; return; }
+    var items = r.items || [];
+    if (!items.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">No training areas yet.</td></tr>'; return; }
+    tbody.innerHTML = items.map(function (s) {
+      return '<tr><td class="fw-semibold">' + esc(s.name) + '</td>' +
+        '<td class="text-center"><div class="form-check form-switch d-inline-block"><input class="form-check-input" type="checkbox" data-act="toggle" data-id="' + s.id + '"' + (Number(s.is_active) ? ' checked' : '') + '></div></td>' +
+        '<td class="text-end"><div class="btn-group btn-group-sm">' +
+          '<button class="btn btn-outline-secondary" data-act="rename" data-id="' + s.id + '" data-name="' + esc(s.name) + '" title="Rename"><i class="bi bi-pencil"></i></button>' +
+          '<button class="btn btn-outline-danger" data-act="del" data-id="' + s.id + '" data-name="' + esc(s.name) + '" title="Delete"><i class="bi bi-trash"></i></button>' +
+        '</div></td></tr>';
+    }).join('');
+  }
+
+  $('addServiceForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var input = $('newServiceName');
+    var r = await post(SERVICES_API + '?action=create', {name: input.value});
+    if (!r.ok) { alert(r.message || 'Could not add.'); return; }
+    input.value = '';
+    loadServices();
+  });
+
+  $('servicesBody').addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b || b.dataset.act === 'toggle') return;
+    var id = Number(b.dataset.id), r;
+    if (b.dataset.act === 'rename') {
+      var name = prompt('Rename training area (existing applications and letters keep the old wording):', b.dataset.name);
+      if (name === null) return;
+      r = await post(SERVICES_API + '?action=update', {id: id, name: name});
+    }
+    if (b.dataset.act === 'del') {
+      if (!confirm('Delete "' + b.dataset.name + '"? Existing applications and letters keep their wording.')) return;
+      r = await post(SERVICES_API + '?action=delete', {id: id});
+    }
+    if (r && !r.ok) { alert(r.message || 'Could not update.'); return; }
+    loadServices();
+  });
+  $('servicesBody').addEventListener('change', async function (e) {
+    var b = e.target.closest('[data-act="toggle"]');
+    if (!b) return;
+    var r = await post(SERVICES_API + '?action=update', {id: Number(b.dataset.id), is_active: b.checked ? 1 : 0});
+    if (!r.ok) { alert(r.message || 'Could not update.'); loadServices(); }
+  });
+
+  /* ---------- Start ---------- */
+  loadInterns();
+  get(API + '?action=applications&status=pending').then(function (r) { updatePendingBadge(r.items || []); });
+})();
+</script>

@@ -17,10 +17,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$username]);
     $user = $stmt->fetch();
     if (!$user) { echo json_encode(['ok'=>false,'message'=>'User not found']); exit; }
+
+    // Interns hold personal documents, so a registration number alone is not enough:
+    // the phone number they registered with must match as well.
+    if ($user['role'] === 'intern') {
+      $phone = preg_replace('/\D/', '', (string)($data['phone'] ?? ''));
+      $stmt = $pdo->prepare('SELECT phone FROM interns WHERE user_id = ? LIMIT 1');
+      $stmt->execute([$user['id']]);
+      $registered = preg_replace('/\D/', '', (string)$stmt->fetchColumn());
+      if ($phone === '' || $registered === '' || !hash_equals($registered, $phone)) {
+        echo json_encode(['ok'=>false,'message'=>'The phone number does not match the one this registration number was registered with.']); exit;
+      }
+      if (strlen($password) < 6) { echo json_encode(['ok'=>false,'message'=>'Password must be at least 6 characters.']); exit; }
+    }
+
     $stmt = $pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
     $stmt->execute([password_hash($password, PASSWORD_BCRYPT), $user['id']]);
-    // Save credentials to JSON file
-    saveUserCredentials($pdo, $user['id'], $username, $password);
+    // Save credentials to JSON file (not for interns - their passwords are never stored in plain text)
+    if ($user['role'] !== 'intern') {
+      saveUserCredentials($pdo, $user['id'], $username, $password);
+    }
     echo json_encode(['ok'=>true]); exit;
   }
 
@@ -37,13 +53,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (!$user || !password_verify($password, $user['password_hash'])) {
     echo json_encode(['ok'=>false,'message'=>'Invalid username or password']); exit;
   }
+  // Only intern accounts touch the interns table, so admin and client logins never depend on it.
+  $user['intern_id'] = null;
+  if ($user['role'] === 'intern') {
+    $st = $pdo->prepare('SELECT id FROM interns WHERE user_id = ? LIMIT 1');
+    $st->execute([$user['id']]);
+    $user['intern_id'] = $st->fetchColumn() ?: null;
+  }
+  session_regenerate_id(true);
   $_SESSION['user'] = [
     'id' => (int)$user['id'],
     'username' => $user['username'],
     'role' => $user['role'],
-    'client_id' => $user['client_id']
+    'client_id' => $user['client_id'],
+    'intern_id' => $user['intern_id']
   ];
-  $redirect = $user['role']==='admin' ? '/lazio_site/admin/dashboard.php' : '/lazio_site/client/index.php';
+  if ($user['role'] === 'admin') $redirect = '/lazio_site/admin/dashboard.php';
+  elseif ($user['role'] === 'intern') $redirect = '/lazio_site/intern/index.php';
+  else $redirect = '/lazio_site/client/index.php';
   echo json_encode(['ok'=>true,'redirect'=>$redirect]); exit;
 }
 ?>
@@ -75,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="mb-3">
                 <label class="form-label">Username</label>
                 <input name="username" class="form-control" placeholder="Enter your username" required>
+                <div class="form-text"><i class="bi bi-mortarboard me-1"></i>Interns: your registration number is your username.</div>
               </div>
               <div class="mb-3">
                 <label class="form-label">Password</label>
@@ -95,6 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="mb-2">
                 <label class="form-label">Username</label>
                 <input name="reset_username" class="form-control" required>
+              </div>
+              <div class="mb-2">
+                <label class="form-label">Registered phone number <span class="text-muted fw-normal">(interns only)</span></label>
+                <input name="reset_phone" class="form-control" inputmode="numeric" maxlength="10" placeholder="The phone number you registered with">
               </div>
               <div class="mb-2">
                 <label class="form-label">New Password</label>
@@ -120,6 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
           <p class="text-center text-muted small mt-3 mb-0">
             Don't have an account? <a href="/lazio_site/auth/signup.php" class="fw-semibold">Sign up</a>
+            &middot; <a href="/lazio_site/auth/signup.php?role=intern" class="fw-semibold">Register as an intern</a>
           </p>
         </div>
       </div>

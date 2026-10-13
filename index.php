@@ -1,4 +1,7 @@
-<?php session_start(); ?>
+<?php
+session_start();
+require_once __DIR__ . '/includes/intern_helpers.php'; // helpers only - no database needed on the home page
+?>
 <!doctype html>
 <html lang="en">
   <head>
@@ -32,6 +35,9 @@
           <a href="/lazio_site/auth/signup.php" class="btn btn-outline-primary btn-lg px-4 py-3">
             <i class="bi bi-person-plus me-2"></i>Become a Client
           </a>
+          <a href="/lazio_site/pages/internship.php" class="btn btn-outline-primary btn-lg px-4 py-3">
+            <i class="bi bi-mortarboard me-2"></i>Join as an Intern
+          </a>
         </div>
       </section>
 
@@ -64,6 +70,29 @@
               </div>
               <h5 class="text-center mb-3">Our Mission</h5>
               <p class="text-center text-muted">Provide reliable services and practical training built on integrity and innovation.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-5" id="internship-section">
+        <div class="card p-4 p-md-5">
+          <div class="row g-4 align-items-center">
+            <div class="col-12 col-lg-5">
+              <span class="section-eyebrow"><i class="bi bi-mortarboard"></i>Industrial training</span>
+              <h3 class="fw-bold">Internships at Lazio</h3>
+              <p class="text-muted">Students from vocational institutes, polytechnics and universities train alongside our teams on real projects. Register with your registration number, apply, upload your documents and get your acceptance letter online.</p>
+              <div class="d-flex gap-2 flex-wrap">
+                <a href="/lazio_site/pages/internship.php" class="btn btn-primary"><i class="bi bi-eye me-1"></i>View all trainings</a>
+                <a href="/lazio_site/auth/signup.php?role=intern" class="btn btn-outline-primary"><i class="bi bi-person-plus me-1"></i>Register as an intern</a>
+              </div>
+            </div>
+            <div class="col-12 col-lg-7">
+              <div class="d-flex flex-wrap gap-2" id="internship-chips">
+                <?php foreach (internship_default_services() as $name): ?>
+                  <span class="badge rounded-pill text-bg-light border px-3 py-2 fw-semibold"><i class="bi bi-check2-circle text-success me-1"></i><?php echo htmlspecialchars($name); ?></span>
+                <?php endforeach; ?>
+              </div>
             </div>
           </div>
         </div>
@@ -114,5 +143,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/lazio_site/assets/js/include.js"></script>
     <script src="/lazio_site/assets/js/main.js"></script>
+    <script>
+      // Swap in the live list of training areas (edited by the office). If it cannot be
+      // loaded, the poster's list the page was rendered with stays.
+      (async function () {
+        try {
+          var res = await fetch('/lazio_site/admin/api/internship_services.php?action=list_public');
+          var data = await res.json();
+          var items = data.items || [];
+          if (!items.length) return;
+          var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); };
+          document.getElementById('internship-chips').innerHTML = items.map(function (s) {
+            return '<span class="badge rounded-pill text-bg-light border px-3 py-2 fw-semibold"><i class="bi bi-check2-circle text-success me-1"></i>' + esc(s.name) + '</span>';
+          }).join('');
+        } catch (e) {}
+      })();
+    </script>
   </body>
 </html>

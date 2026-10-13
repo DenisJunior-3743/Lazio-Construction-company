@@ -1,0 +1,423 @@
+<span class="section-eyebrow"><i class="bi bi-envelope-paper"></i>Internships</span>
+<h5 class="fw-bold mb-1">Acceptance letters</h5>
+<p class="text-muted small mb-3">Pick an intern and fill in the period and training areas &mdash; the letter writes itself. Names and registration numbers are loaded from the database and printed in bold.</p>
+
+<div id="letterEditBanner" class="alert alert-info d-none d-flex justify-content-between align-items-center flex-wrap gap-2 py-2">
+  <span><i class="bi bi-pencil-square me-2"></i>Editing letter <strong id="editingRef"></strong></span>
+  <button type="button" class="btn btn-sm btn-outline-secondary" id="cancelEditBtn">Cancel editing</button>
+</div>
+
+<div class="row g-4">
+  <!-- Form -->
+  <div class="col-12 col-xl-6">
+    <form id="letterForm" novalidate>
+      <div class="border rounded p-3 mb-3" style="background:var(--card-soft);">
+        <h6 class="fw-bold mb-3"><span class="badge text-bg-primary me-2">1</span>Intern</h6>
+        <input id="letterInternSearch" class="form-control form-control-sm mb-2" placeholder="Search by name or registration number">
+        <select id="letterInternSelect" class="form-select mb-2"></select>
+        <div id="letterInternInfo" class="small text-muted mb-2">Select an intern to load their details.</div>
+        <label class="form-label small mb-1">Application <span class="text-muted">(optional &mdash; fills in the dates and training areas)</span></label>
+        <select id="letterApplicationSelect" class="form-select form-select-sm"><option value="">No application</option></select>
+      </div>
+
+      <div class="border rounded p-3 mb-3" style="background:var(--card-soft);">
+        <h6 class="fw-bold mb-3"><span class="badge text-bg-primary me-2">2</span>Period</h6>
+        <div class="row g-3">
+          <div class="col-12 col-md-4"><label class="form-label">Letter date</label><input type="date" id="letterDate" class="form-control"></div>
+          <div class="col-12 col-md-4"><label class="form-label">Internship starts</label><input type="date" id="letterStart" class="form-control"></div>
+          <div class="col-12 col-md-4"><label class="form-label">Internship ends</label><input type="date" id="letterEnd" class="form-control"></div>
+        </div>
+        <div class="row g-3 mt-0">
+          <div class="col-12">
+            <label class="form-label small mb-1">Period wording <span class="text-muted">(leave blank to calculate it: <strong id="autoDuration">&mdash;</strong>)</span></label>
+            <input id="letterDuration" class="form-control form-control-sm" maxlength="100" placeholder='e.g. two (2) months'>
+          </div>
+        </div>
+      </div>
+
+      <div class="border rounded p-3 mb-3" style="background:var(--card-soft);">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0"><span class="badge text-bg-primary me-2">3</span>Training areas</h6>
+          <span class="small text-muted" id="serviceCount">0 selected</span>
+        </div>
+        <div class="row g-2" id="letterServices"><div class="col-12 text-muted small">Loading...</div></div>
+        <div class="small text-muted mt-2">Listed in the letter as: <strong id="servicesSentence">&mdash;</strong></div>
+      </div>
+
+      <div class="border rounded p-3 mb-3" style="background:var(--card-soft);">
+        <h6 class="fw-bold mb-3"><span class="badge text-bg-primary me-2">4</span>Terms &amp; signature</h6>
+        <div class="mb-3"><label class="form-label">Working hours</label><input id="letterHours" class="form-control" maxlength="150"></div>
+        <div class="mb-1">
+          <label class="form-label">Conditions <span class="text-muted fw-normal small">(one per line &mdash; <code>{working_hours}</code> inserts the working hours)</span></label>
+          <textarea id="letterConditions" class="form-control" rows="9"></textarea>
+        </div>
+        <button type="button" class="btn btn-link btn-sm p-0 mb-3" id="resetConditionsBtn">Restore the standard conditions</button>
+        <div class="row g-3">
+          <div class="col-12 col-md-6"><label class="form-label">Signed by</label><input id="letterSigName" class="form-control" maxlength="150"></div>
+          <div class="col-12 col-md-6"><label class="form-label">Title</label><input id="letterSigTitle" class="form-control" maxlength="150"></div>
+        </div>
+      </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="letterSent" checked>
+        <label class="form-check-label" for="letterSent">Make this letter available to the intern now <span class="text-muted small">(they see it, and can print it, in their portal)</span></label>
+      </div>
+      <div id="letterFormAlert" class="alert alert-danger d-none"></div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-success" id="saveLetterBtn"><i class="bi bi-save me-1"></i><span id="saveLetterLabel">Save letter</span></button>
+        <button type="button" class="btn btn-primary" id="saveLetterPrintBtn"><i class="bi bi-printer me-1"></i>Save &amp; print</button>
+        <button type="button" class="btn btn-outline-secondary" id="resetLetterBtn"><i class="bi bi-arrow-counterclockwise me-1"></i>Clear</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Preview -->
+  <div class="col-12 col-xl-6">
+    <div style="position:sticky; top:12px;">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="bi bi-eye me-1"></i>Live preview</h6>
+        <span class="badge text-bg-secondary" id="pageBadge">1 page</span>
+      </div>
+      <div class="letter-preview-wrap" id="letterPreview"></div>
+      <p class="small text-muted mt-2 mb-0">Highlighted <span class="lt-missing" style="background:#fef3c7;color:#92400e;border-radius:3px;padding:0 3px;">[placeholders]</span> show fields that are still empty.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="my-4">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h5 class="fw-bold mb-0">Saved letters</h5>
+  <button class="btn btn-outline-primary btn-sm" id="refreshLettersBtn"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+</div>
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead><tr><th>Reference</th><th>Intern</th><th>Period</th><th>Letter date</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+    <tbody id="lettersBody"><tr><td colspan="6" class="text-center text-muted py-4">Loading letters...</td></tr></tbody>
+  </table>
+</div>
+
+<script>
+(function () {
+  var LETTERS_API = '/lazio_site/admin/api/acceptance_letters.php';
+  var INTERNS_API = '/lazio_site/admin/api/interns.php';
+  var SERVICES_API = '/lazio_site/admin/api/internship_services.php';
+  var L = window.LazioLetter;
+
+  var internsById = {};
+  var internList = [];
+  var services = [];            // names, in display order
+  var internApplications = [];  // applications of the selected intern
+  var editingId = null;
+  var editingRef = '';
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c];
+    });
+  }
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // Always resolves with an object; on failure it carries the server's own message when there is one.
+  async function parse(r) {
+    var j = null;
+    try { j = await r.json(); } catch (e) {}
+    if (!r.ok) return {ok: false, message: (j && j.message) || (r.status === 403 ? 'Access denied. Please log in as admin.' : 'Request failed.')};
+    return j || {ok: false, message: 'Unexpected response from the server.'};
+  }
+  async function get(url) {
+    return parse(await fetch(url, {credentials: 'include'}));
+  }
+  async function post(url, payload) {
+    return parse(await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'include', body: JSON.stringify(payload || {})}));
+  }
+
+  /* ---------- Reading / writing the form ---------- */
+
+  function selectedServices() {
+    return Array.prototype.map.call($('letterServices').querySelectorAll('input:checked'), function (i) { return i.value; });
+  }
+
+  function setServices(names) {
+    var want = {};
+    (names || []).forEach(function (n) { want[String(n).toLowerCase()] = n; });
+    // Show any selected name that is no longer in the list (renamed / removed) so it is not lost.
+    var known = {};
+    services.forEach(function (s) { known[s.toLowerCase()] = true; });
+    var extras = (names || []).filter(function (n) { return !known[String(n).toLowerCase()]; });
+    renderServiceGrid(extras);
+    $('letterServices').querySelectorAll('input').forEach(function (i) { i.checked = !!want[i.value.toLowerCase()]; });
+  }
+
+  function renderServiceGrid(extras) {
+    var all = services.concat(extras || []);
+    if (!all.length) { $('letterServices').innerHTML = '<div class="col-12 text-muted small">No training areas yet &mdash; add some under Interns &rarr; Training areas.</div>'; return; }
+    $('letterServices').innerHTML = all.map(function (name, i) {
+      var legacy = i >= services.length;
+      return '<div class="col-12 col-md-6"><div class="form-check">' +
+        '<input class="form-check-input" type="checkbox" value="' + esc(name) + '" id="lsvc' + i + '">' +
+        '<label class="form-check-label" for="lsvc' + i + '">' + esc(name) + (legacy ? ' <span class="badge text-bg-light border">no longer listed</span>' : '') + '</label></div></div>';
+    }).join('');
+  }
+
+  function currentData() {
+    var intern = internsById[$('letterInternSelect').value] || {};
+    return {
+      recipient_name: intern.full_name || '',
+      reg_number: intern.reg_number || '',
+      institution: intern.institution || '',
+      course: intern.course || '',
+      letter_date: $('letterDate').value,
+      start_date: $('letterStart').value,
+      end_date: $('letterEnd').value,
+      duration_text: $('letterDuration').value,
+      services: selectedServices(),
+      working_hours: $('letterHours').value,
+      conditions: $('letterConditions').value,
+      signatory_name: $('letterSigName').value,
+      signatory_title: $('letterSigTitle').value,
+      ref: editingRef
+    };
+  }
+
+  function refreshPreview() {
+    var d = currentData();
+    $('letterPreview').innerHTML = L.build(d);
+    var pages = L.fit($('letterPreview'));
+    var badge = $('pageBadge');
+    badge.textContent = pages + (pages === 1 ? ' page' : ' pages');
+    badge.className = 'badge ' + (pages === 1 ? 'text-bg-success' : 'text-bg-warning');
+    $('autoDuration').textContent = L.describeDuration(d.start_date, d.end_date) || '—';
+    $('serviceCount').textContent = d.services.length + ' selected';
+    $('servicesSentence').textContent = L.joinList(d.services) || '—';
+  }
+
+  function showInternInfo() {
+    var i = internsById[$('letterInternSelect').value];
+    $('letterInternInfo').innerHTML = i
+      ? '<i class="bi bi-person-badge me-1"></i><strong>' + esc(i.full_name) + '</strong> &middot; Reg. No. <strong>' + esc(i.reg_number) + '</strong><br>' +
+        '<i class="bi bi-bank me-1"></i>' + esc(i.institution) + ' &middot; ' + esc(i.course)
+      : 'Select an intern to load their details.';
+  }
+
+  /* ---------- Interns & applications ---------- */
+
+  function renderInternOptions() {
+    var q = $('letterInternSearch').value.trim().toLowerCase();
+    var current = $('letterInternSelect').value;
+    var rows = internList.filter(function (i) { return !q || (i.full_name + ' ' + i.reg_number).toLowerCase().indexOf(q) !== -1 || String(i.id) === current; });
+    $('letterInternSelect').innerHTML = '<option value="">' + (internList.length ? 'Select an intern…' : 'No interns registered yet') + '</option>' +
+      rows.map(function (i) { return '<option value="' + i.id + '">' + esc(i.full_name) + ' — ' + esc(i.reg_number) + '</option>'; }).join('');
+    $('letterInternSelect').value = current;
+  }
+
+  async function loadInternApplications(internId, preferAppId) {
+    internApplications = [];
+    var sel = $('letterApplicationSelect');
+    sel.innerHTML = '<option value="">No application</option>';
+    if (!internId) return;
+    var r = await get(INTERNS_API + '?action=get&id=' + internId);
+    if (!r.ok) return;
+    internApplications = r.applications || [];
+    sel.innerHTML = '<option value="">No application</option>' + internApplications.map(function (a) {
+      return '<option value="' + a.id + '">#' + a.id + ' · ' + esc(L.formatDate(a.start_date)) + ' – ' + esc(L.formatDate(a.end_date)) + ' · ' + esc(a.status) + '</option>';
+    }).join('');
+    // Prefer the requested application, else the newest one that is not rejected.
+    var pick = preferAppId ? internApplications.find(function (a) { return a.id === preferAppId; }) : null;
+    if (!pick && preferAppId === undefined) pick = internApplications.find(function (a) { return a.status !== 'rejected'; });
+    if (pick) { sel.value = pick.id; applyApplication(pick); }
+  }
+
+  function applyApplication(a) {
+    $('letterStart').value = a.start_date;
+    $('letterEnd').value = a.end_date;
+    setServices(a.services);
+    refreshPreview();
+  }
+
+  $('letterInternSelect').addEventListener('change', async function () {
+    showInternInfo();
+    refreshPreview();
+    await loadInternApplications(Number(this.value) || 0);
+  });
+  $('letterInternSearch').addEventListener('input', renderInternOptions);
+  $('letterApplicationSelect').addEventListener('change', function () {
+    var a = internApplications.find(function (x) { return String(x.id) === this.value; }, this);
+    if (a) applyApplication(a);
+  });
+
+  /* ---------- Live preview triggers ---------- */
+
+  ['letterDate', 'letterStart', 'letterEnd', 'letterDuration', 'letterHours', 'letterConditions', 'letterSigName', 'letterSigTitle'].forEach(function (id) {
+    $(id).addEventListener('input', refreshPreview);
+  });
+  $('letterServices').addEventListener('change', refreshPreview);
+  window.addEventListener('resize', function () { if ($('letterPreview')) L.fit($('letterPreview')); });
+
+  $('resetConditionsBtn').addEventListener('click', function () {
+    $('letterConditions').value = L.DEFAULTS.conditions;
+    refreshPreview();
+  });
+
+  /* ---------- New / edit / save ---------- */
+
+  function setDefaults() {
+    $('letterDate').value = todayStr();
+    $('letterStart').value = '';
+    $('letterEnd').value = '';
+    $('letterDuration').value = '';
+    $('letterHours').value = L.DEFAULTS.working_hours;
+    $('letterConditions').value = L.DEFAULTS.conditions;
+    $('letterSigName').value = L.DEFAULTS.signatory_name;
+    $('letterSigTitle').value = L.DEFAULTS.signatory_title;
+    $('letterSent').checked = true;
+  }
+
+  function resetForm() {
+    editingId = null; editingRef = '';
+    $('letterEditBanner').classList.add('d-none');
+    $('saveLetterLabel').textContent = 'Save letter';
+    $('letterFormAlert').classList.add('d-none');
+    $('letterInternSearch').value = '';
+    renderInternOptions();
+    $('letterInternSelect').value = '';
+    internApplications = [];
+    $('letterApplicationSelect').innerHTML = '<option value="">No application</option>';
+    setDefaults();
+    setServices([]);
+    showInternInfo();
+    refreshPreview();
+  }
+  $('resetLetterBtn').addEventListener('click', resetForm);
+  $('cancelEditBtn').addEventListener('click', resetForm);
+
+  async function editLetter(id) {
+    var r = await get(LETTERS_API + '?action=get&id=' + id);
+    if (!r.ok) { alert(r.message || 'Could not load the letter.'); return; }
+    var l = r.letter;
+    editingId = l.id; editingRef = l.ref;
+    $('letterInternSearch').value = '';
+    renderInternOptions();
+    $('letterInternSelect').value = l.intern_id;
+    showInternInfo();
+    await loadInternApplications(l.intern_id, l.application_id || 0);
+    $('letterApplicationSelect').value = l.application_id || '';
+    $('letterDate').value = l.letter_date;
+    $('letterStart').value = l.start_date;
+    $('letterEnd').value = l.end_date;
+    $('letterDuration').value = l.duration_text || '';
+    setServices(l.services);
+    $('letterHours').value = l.working_hours;
+    $('letterConditions').value = l.conditions;
+    $('letterSigName').value = l.signatory_name;
+    $('letterSigTitle').value = l.signatory_title;
+    $('letterSent').checked = !!l.sent_to_intern;
+    $('editingRef').textContent = l.ref;
+    $('letterEditBanner').classList.remove('d-none');
+    $('saveLetterLabel').textContent = 'Update letter';
+    refreshPreview();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  async function saveLetter(andPrint) {
+    var box = $('letterFormAlert');
+    box.classList.add('d-none');
+    var d = currentData();
+    var internId = Number($('letterInternSelect').value) || 0;
+    var fail = function (m) { box.textContent = m; box.classList.remove('d-none'); box.scrollIntoView({behavior: 'smooth', block: 'center'}); };
+    if (!internId) return fail('Please select an intern.');
+    if (!d.start_date || !d.end_date) return fail('Please choose when the internship starts and ends.');
+    if (d.end_date < d.start_date) return fail('The end date cannot be before the start date.');
+    if (!d.services.length) return fail('Select at least one training area.');
+
+    var payload = {
+      id: editingId || 0, intern_id: internId, application_id: Number($('letterApplicationSelect').value) || 0,
+      letter_date: d.letter_date, start_date: d.start_date, end_date: d.end_date, duration_text: d.duration_text,
+      services: d.services, working_hours: d.working_hours, conditions: d.conditions,
+      signatory_name: d.signatory_name, signatory_title: d.signatory_title, sent_to_intern: $('letterSent').checked ? 1 : 0
+    };
+    var buttons = [$('saveLetterBtn'), $('saveLetterPrintBtn')];
+    buttons.forEach(function (b) { b.disabled = true; });
+    var r = await post(LETTERS_API + '?action=save', payload);
+    buttons.forEach(function (b) { b.disabled = false; });
+    if (!r.ok) return fail(r.message || 'Could not save the letter.');
+
+    if (andPrint) window.open('/lazio_site/intern/print_letter.php?id=' + r.letter_id, '_blank');
+    resetForm();
+    loadLetters();
+  }
+  $('saveLetterBtn').addEventListener('click', function () { saveLetter(false); });
+  $('saveLetterPrintBtn').addEventListener('click', function () { saveLetter(true); });
+
+  /* ---------- Saved letters ---------- */
+
+  async function loadLetters() {
+    var tbody = $('lettersBody');
+    var r = await get(LETTERS_API + '?action=list');
+    if (r.ok === false) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">' + esc(r.message) + '</td></tr>'; return; }
+    var items = r.items || [];
+    if (!items.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-envelope-paper icon-md mb-2 d-block"></i>No letters saved yet.</td></tr>'; return; }
+    tbody.innerHTML = items.map(function (l) {
+      return '<tr>' +
+        '<td class="fw-semibold">' + esc(l.ref) + '</td>' +
+        '<td>' + esc(l.recipient_name) + '<div class="small text-muted">' + esc(l.reg_number) + '</div></td>' +
+        '<td class="small">' + esc(L.formatDate(l.start_date)) + '<br>to ' + esc(L.formatDate(l.end_date)) + '</td>' +
+        '<td>' + esc(L.formatDate(l.letter_date)) + '</td>' +
+        '<td><span class="badge ' + (l.sent_to_intern ? 'text-bg-success' : 'text-bg-warning') + '">' + (l.sent_to_intern ? 'Sent to intern' : 'Draft') + '</span></td>' +
+        '<td class="text-end"><div class="btn-group btn-group-sm">' +
+          '<a class="btn btn-outline-primary" target="_blank" href="/lazio_site/intern/print_letter.php?id=' + l.id + '" title="View / print"><i class="bi bi-printer"></i></a>' +
+          '<button class="btn btn-outline-secondary" data-act="edit" data-id="' + l.id + '" title="Edit"><i class="bi bi-pencil"></i></button>' +
+          '<button class="btn btn-outline-success" data-act="toggle" data-id="' + l.id + '" data-sent="' + (l.sent_to_intern ? 1 : 0) + '" title="' + (l.sent_to_intern ? 'Hide from the intern' : 'Send to the intern') + '"><i class="bi bi-' + (l.sent_to_intern ? 'eye-slash' : 'send') + '"></i></button>' +
+          '<button class="btn btn-outline-danger" data-act="delete" data-id="' + l.id + '" title="Delete"><i class="bi bi-trash"></i></button>' +
+        '</div></td></tr>';
+    }).join('');
+  }
+  $('refreshLettersBtn').addEventListener('click', loadLetters);
+
+  $('lettersBody').addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var id = Number(b.dataset.id);
+    if (b.dataset.act === 'edit') editLetter(id);
+    if (b.dataset.act === 'toggle') {
+      await post(LETTERS_API + '?action=toggle_sent', {id: id, sent: b.dataset.sent === '1' ? 0 : 1});
+      loadLetters();
+    }
+    if (b.dataset.act === 'delete') {
+      if (!confirm('Delete this letter? The intern will no longer be able to see it.')) return;
+      await post(LETTERS_API + '?action=delete', {id: id});
+      if (editingId === id) resetForm();
+      loadLetters();
+    }
+  });
+
+  /* ---------- Start ---------- */
+
+  (async function init() {
+    var res = await Promise.all([get(INTERNS_API + '?action=options'), get(SERVICES_API + '?action=list')]);
+    var loadError = res[0].ok === false ? res[0] : (res[1].ok === false ? res[1] : null);
+    internList = (res[0].items || []);
+    internList.forEach(function (i) { internsById[i.id] = i; });
+    services = (res[1].items || []).filter(function (s) { return Number(s.is_active); }).map(function (s) { return s.name; });
+    renderServiceGrid([]);
+    resetForm();
+    if (loadError) {
+      $('letterFormAlert').textContent = loadError.message || 'Could not load the interns and training areas.';
+      $('letterFormAlert').classList.remove('d-none');
+    }
+    loadLetters();
+
+    // Arriving from the Interns screen ("Draft acceptance letter").
+    var pre = window.__lazioLetterPrefill;
+    window.__lazioLetterPrefill = null;
+    if (pre && pre.internId && internsById[pre.internId]) {
+      $('letterInternSelect').value = pre.internId;
+      showInternInfo();
+      refreshPreview();
+      await loadInternApplications(pre.internId, pre.applicationId || undefined);
+    }
+  })();
+})();
+</script>

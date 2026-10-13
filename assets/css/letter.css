@@ -1,0 +1,144 @@
+/* ==========================================================================
+   Acceptance letter (A4) - used by the admin preview and the print pages.
+   Markup is produced by assets/js/acceptance-letter.js
+   ========================================================================== */
+
+.letter-sheet {
+  --lt-blue: #1e3a8a;
+  --lt-orange: #f97316;
+  --lt-side: 20mm;
+  width: 210mm;
+  margin: 0 auto;
+  background: #fff;
+  color: #111827;
+  font-family: Arial, Helvetica, 'Segoe UI', sans-serif;
+  font-size: 10pt;
+  line-height: 1.45;
+  box-shadow: 0 12px 32px -12px rgba(15, 23, 42, 0.28);
+  text-align: left;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.letter-sheet * { box-sizing: border-box; }
+
+/* One table so the letterhead (thead) and footer (tfoot) repeat on every printed page. */
+.letter-sheet .lt-table {
+  width: 100%;
+  height: 295mm; /* acts as a minimum: footer sits at the bottom of a one-page letter */
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.letter-sheet .lt-table td { padding: 0; vertical-align: top; }
+.letter-sheet thead { display: table-header-group; }
+.letter-sheet tfoot { display: table-footer-group; }
+
+/* Coloured band (top of every page) */
+.letter-sheet .lt-band {
+  display: flex;
+  height: 4.5mm;
+  margin: 6mm var(--lt-side) 0;
+}
+.letter-sheet .lt-band span:nth-child(1) { flex: 38; background: var(--lt-blue); }
+.letter-sheet .lt-band span:nth-child(2) { flex: 24; background: var(--lt-orange); }
+.letter-sheet .lt-band span:nth-child(3) { flex: 38; background: var(--lt-blue); }
+
+/* Letterhead */
+.letter-sheet .lt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8mm;
+  padding: 4mm var(--lt-side) 2.5mm;
+}
+.letter-sheet .lt-brand { display: flex; align-items: center; gap: 4mm; }
+.letter-sheet .lt-logo { height: 15mm; width: auto; display: block; }
+.letter-sheet .lt-company {
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--lt-blue);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+.letter-sheet .lt-tagline { font-size: 8.5pt; color: #4b5563; font-style: italic; }
+.letter-sheet .lt-contact { text-align: right; font-size: 9pt; line-height: 1.45; }
+/* the bottom margin repeats on every page, giving the body a gap under the letterhead */
+.letter-sheet .lt-rule { height: 0; border-top: 0.6mm solid var(--lt-orange); margin: 0 var(--lt-side) 5mm; }
+
+/* Body (selector is as specific as the `td` reset above so the padding wins) */
+.letter-sheet .lt-table td.lt-body { padding: 0 var(--lt-side) 1mm; }
+.letter-sheet .lt-body p { margin: 0 0 2.6mm; text-align: justify; }
+.letter-sheet .lt-date { text-align: right; margin-bottom: 1mm; }
+.letter-sheet .lt-ref { text-align: right; font-size: 9.5pt; color: #374151; margin-bottom: 4mm; }
+.letter-sheet .lt-date + .lt-address { margin-top: 3mm; }
+.letter-sheet .lt-address { margin-bottom: 3.5mm; }
+.letter-sheet .lt-re {
+  font-weight: 700;
+  text-decoration: underline;
+  text-align: left !important;
+  margin-top: 1mm !important;
+}
+.letter-sheet .lt-keep { break-after: avoid; page-break-after: avoid; }
+
+/* Conditions */
+.letter-sheet .lt-conds { margin: 0 0 3mm 7mm; }
+.letter-sheet .lt-cond {
+  display: flex;
+  gap: 3mm;
+  margin-bottom: 1.3mm;
+  text-align: justify;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.letter-sheet .lt-cond-n { flex: 0 0 5mm; }
+
+/* Closing + signature */
+.letter-sheet .lt-closing { break-inside: avoid; page-break-inside: avoid; }
+.letter-sheet .lt-yours { margin-top: 3mm !important; text-align: left !important; }
+.letter-sheet .lt-sign-space { height: 12mm; }
+.letter-sheet .lt-sign-line { width: 62mm; border-top: 0.3mm solid #111827; margin-bottom: 1mm; }
+.letter-sheet .lt-signatory { line-height: 1.4; }
+.letter-sheet .lt-date-line { margin-top: 3mm !important; text-align: left !important; }
+
+/* Footer. On screen it sits at the end of the sheet; in print it is pinned to
+   the bottom of every page (see @media print) and the spacer reserves its room. */
+.letter-sheet .lt-foot {
+  margin: 0 var(--lt-side) 6mm;
+  padding-top: 2mm;
+  border-top: 0.3mm solid var(--lt-blue);
+  text-align: center;
+  font-size: 8pt;
+  color: #4b5563;
+}
+.letter-sheet .lt-foot-spacer { display: none; }
+
+/* Placeholders shown in the live preview until a field is filled in */
+.letter-sheet .lt-missing {
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 3px;
+  padding: 0 3px;
+  font-weight: 400;
+}
+
+/* ---------- Print page chrome (intern/print_letter.php) ---------- */
+.letter-page-body { margin: 0; padding: 24px 12px 40px; background: #e5e7eb; }
+.letter-toolbar { max-width: 210mm; margin: 0 auto 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; }
+.letter-toolbar .btn-print {
+  padding: 10px 22px; border: 0; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; color: #fff;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); box-shadow: 0 8px 20px -8px rgba(37, 99, 235, 0.5);
+}
+.letter-toolbar a { color: #1d4ed8; text-decoration: none; font-size: 14px; }
+
+/* ---------- Admin preview ---------- */
+.letter-preview-wrap { position: relative; width: 100%; overflow: hidden; background: #e5e7eb; border-radius: 12px; padding: 0; }
+.letter-preview-wrap .letter-sheet { box-shadow: none; margin: 0; }
+
+@page { size: A4; margin: 0; }
+
+@media print {
+  html, body, .letter-page-body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+  .no-print { display: none !important; }
+  .letter-sheet { box-shadow: none; margin: 0; width: 210mm; }
+  .letter-sheet .lt-foot-spacer { display: block; height: 13mm; }
+  .letter-sheet .lt-foot { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; }
+}

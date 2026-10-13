@@ -169,6 +169,60 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Client / Intern tabs on the sign-up page
+  const roleTabs = document.getElementById('roleTabs');
+  const internSignupForm = document.getElementById('internSignupForm');
+  if (roleTabs && signupForm && internSignupForm) {
+    const intro = document.getElementById('signupIntro');
+    const alertBox = document.getElementById('signupAlert');
+    const showRole = (role) => {
+      roleTabs.querySelectorAll('[data-role]').forEach(b => b.classList.toggle('active', b.dataset.role === role));
+      signupForm.classList.toggle('d-none', role !== 'client');
+      internSignupForm.classList.toggle('d-none', role !== 'intern');
+      if (intro) intro.textContent = intro.dataset[role];
+      alertBox.classList.add('d-none');
+    };
+    roleTabs.querySelectorAll('[data-role]').forEach(b => b.addEventListener('click', () => showRole(b.dataset.role)));
+    if (new URLSearchParams(window.location.search).get('role') === 'intern') showRole('intern');
+
+    const phoneInput = internSignupForm.phone;
+    phoneInput.addEventListener('input', () => {
+      phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
+    });
+
+    internSignupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submit = document.getElementById('internSignupSubmit');
+      const f = internSignupForm;
+      const fail = (msg) => { alertBox.classList.remove('d-none', 'alert-success'); alertBox.classList.add('alert-danger'); alertBox.textContent = msg; };
+      alertBox.classList.add('d-none');
+
+      const data = Object.fromEntries(new FormData(f).entries());
+      for (const k of ['full_name', 'reg_number', 'institution', 'course']) data[k] = (data[k] || '').trim();
+      if (!data.full_name || !data.reg_number || !data.institution || !data.course) return fail('Please fill in all the fields.');
+      if (!/^\d{10}$/.test(data.phone || '')) return fail('Phone must be exactly 10 digits (0-9).');
+      if ((data.password || '').length < 6) return fail('Password must be at least 6 characters.');
+      if (data.password !== data.confirm_password) return fail('Passwords do not match.');
+
+      submit.disabled = true;
+      try {
+        const res = await postJSON('/lazio_site/auth/signup.php', {...data, role: 'intern'});
+        if (res.ok) {
+          alertBox.classList.remove('d-none', 'alert-danger');
+          alertBox.classList.add('alert-success');
+          alertBox.textContent = 'You are registered. Taking you to your intern portal...';
+          setTimeout(() => { window.location.href = res.redirect || '/lazio_site/intern/index.php'; }, 1200);
+        } else {
+          fail(res.message || 'Registration failed.');
+          submit.disabled = false;
+        }
+      } catch (err) {
+        fail('Network error. Please try again.');
+        submit.disabled = false;
+      }
+    });
+  }
+
   // Forgot Password toggle
   const forgotBtn = document.getElementById('forgotPasswordBtn');
   const resetForm = document.getElementById('resetForm');
@@ -204,7 +258,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await postJSON('/lazio_site/auth/login.php', {
         action: 'reset_password',
         username,
-        password
+        password,
+        phone: resetForm.reset_phone ? resetForm.reset_phone.value.trim() : ''
       });
       if (res.ok) {
         alert.classList.remove('d-none');

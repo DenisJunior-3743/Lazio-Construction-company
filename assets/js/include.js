@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = await r.json();
     const isAuth = !!data.auth;
     const isAdmin = data.role === 'admin';
+    const isIntern = data.role === 'intern';
 
     const show = (id, show) => {
       const el = document.getElementById(id);
@@ -101,6 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     show('nav-signup', !isAuth);
     show('nav-logout', isAuth);
     show('nav-admin', isAdmin);
+    show('nav-intern', isIntern);
   } catch (e) {}
 
   // Year

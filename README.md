@@ -22,6 +22,11 @@ A modern, mobile-first PHP + MySQL project for Lazio Construction Company. Built
 - `/uploads/*` — Uploaded images/videos
 - `/assets/*` — CSS/JS/images
 
+## Internships
+Interns (students on industrial training) register with their registration number, apply, upload documents and print
+acceptance letters drafted by the office. Run `sql/internship_module.sql` on the database, then see
+[INTERNSHIP_MODULE.md](INTERNSHIP_MODULE.md) for the file list and setup notes.
+
 ## Notes
 - For PDF, we use the browser's **Print to PDF** from the invoice page.
 - Add a server-side PDF tool (e.g., DOMPDF) later if required.

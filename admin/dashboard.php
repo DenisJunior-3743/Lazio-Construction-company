@@ -16,6 +16,7 @@ $secondName = $_SESSION['user']['second_name'] ?? '';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/lazio_site/assets/css/root.css" rel="stylesheet">
+    <link href="/lazio_site/assets/css/letter.css" rel="stylesheet">
   </head>
   <body>
     <div id="header-include"></div>
@@ -51,6 +52,12 @@ $secondName = $_SESSION['user']['second_name'] ?? '';
               <button class="list-group-item list-group-item-action d-flex align-items-center py-2" data-fetch="/lazio_site/admin/partials/invoices.html">
                 <i class="bi bi-receipt me-2"></i>View Invoices
               </button>
+              <button class="list-group-item list-group-item-action d-flex align-items-center py-2" data-fetch="/lazio_site/admin/partials/interns.html">
+                <i class="bi bi-mortarboard me-2"></i>Interns
+              </button>
+              <button class="list-group-item list-group-item-action d-flex align-items-center py-2" data-fetch="/lazio_site/admin/partials/acceptance_letters.html">
+                <i class="bi bi-envelope-paper me-2"></i>Acceptance Letters
+              </button>
               <button class="list-group-item list-group-item-action d-flex align-items-center py-2" data-fetch="/lazio_site/admin/partials/uploads.html">
                 <i class="bi bi-cloud-upload me-2"></i>Uploads
               </button>
@@ -71,6 +78,7 @@ $secondName = $_SESSION['user']['second_name'] ?? '';
     <div id="footer-include"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/lazio_site/assets/js/include.js"></script>
+    <script src="/lazio_site/assets/js/acceptance-letter.js"></script>
     <script>
       window.userSecondName = <?php echo json_encode($secondName); ?>;
     </script>

@@ -6,29 +6,20 @@
   <div class="col-6 col-md-3"><div class="stat"><span class="stat-icon"><i class="bi bi-receipt"></i></span><div class="small-muted">Invoices</div><div id="statInvoices" class="fs-4">—</div></div></div>
   <div class="col-6 col-md-3"><div class="stat"><span class="stat-icon"><i class="bi bi-box-seam"></i></span><div class="small-muted">Items</div><div id="statItems" class="fs-4">—</div></div></div>
   <div class="col-6 col-md-3"><div class="stat"><span class="stat-icon"><i class="bi bi-cloud-upload"></i></span><div class="small-muted">Uploads</div><div id="statUploads" class="fs-4">—</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat"><span class="stat-icon"><i class="bi bi-mortarboard"></i></span><div class="small-muted">Interns</div><div id="statInterns" class="fs-4">—</div></div></div>
+  <div class="col-6 col-md-3"><div class="stat"><span class="stat-icon"><i class="bi bi-hourglass-split"></i></span><div class="small-muted">Pending applications</div><div id="statPendingApps" class="fs-4">—</div></div></div>
 </div>
 <script>
 (async () => {
+  const ids = {clients:'statClients', invoices:'statInvoices', items:'statItems', uploads:'statUploads', interns:'statInterns', pending_applications:'statPendingApps'};
+  const setAll = (v) => Object.values(ids).forEach(id => { document.getElementById(id).textContent = v; });
   try {
     const r = await fetch('/lazio_site/admin/api/stats.php', {credentials:'include'});
-    if (!r.ok) {
-      const msg = r.status === 403 ? '—' : '—';
-      document.getElementById('statClients').textContent = msg;
-      document.getElementById('statInvoices').textContent = msg;
-      document.getElementById('statItems').textContent = msg;
-      document.getElementById('statUploads').textContent = msg;
-      return;
-    }
+    if (!r.ok) { setAll('—'); return; }
     const s = await r.json();
-    document.getElementById('statClients').textContent = s.clients;
-    document.getElementById('statInvoices').textContent = s.invoices;
-    document.getElementById('statItems').textContent = s.items;
-    document.getElementById('statUploads').textContent = s.uploads;
+    Object.entries(ids).forEach(([key, id]) => { document.getElementById(id).textContent = s[key] ?? '—'; });
   } catch (e) {
-    document.getElementById('statClients').textContent = '—';
-    document.getElementById('statInvoices').textContent = '—';
-    document.getElementById('statItems').textContent = '—';
-    document.getElementById('statUploads').textContent = '—';
+    setAll('—');
   }
 })();
 </script>
